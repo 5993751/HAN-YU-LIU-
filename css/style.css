@@ -1,0 +1,688 @@
+/* ==========================================
+   1. 全局设定与色彩变量
+   ========================================== */
+:root {
+    --bg-color: #f7f6f2;       /* 温润高级米白纸张色 */
+    --text-main: #1a1a1a;      /* 深碳黑 */
+    --text-muted: #767676;     /* 浅灰注释色 */
+    --border-color: #e2dfd8;   /* 极简分割线 */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================
+   2. 首页顶部 Header
+   ========================================== */
+.site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 28px 60px 18px 60px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.site-title {
+    font-family: 'Newsreader', serif;
+    font-size: 46px;
+    font-weight: 400;
+    letter-spacing: 8px;
+    line-height: 1;
+    color: var(--text-main);
+}
+
+.site-subtitle {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    text-transform: uppercase;
+}
+
+.site-nav {
+    display: flex;
+    gap: 28px;
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 6px 0;
+    border-bottom: 1.5px solid transparent;
+}
+
+.nav-btn:hover, .nav-btn.active {
+    color: var(--text-main);
+    border-bottom: 1.5px solid var(--text-main);
+}
+
+/* ==========================================
+   3. 首页「左文右画」一体式美术馆布局
+   ========================================== */
+.view-section {
+    display: none;
+    padding: 24px 60px;
+}
+
+.view-section.active {
+    display: block;
+    animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.featured-split-layout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: calc(100vh - 150px);
+    min-height: 520px;
+    max-width: 1400px;
+    margin: 0 auto;
+    gap: 60px;
+}
+
+/* 左侧：大标题与实时联动控制区 (占 44%) */
+.featured-left {
+    flex: 0 0 44%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 10px;
+}
+
+.meta-tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+}
+
+.hero-exhibition-title {
+    font-family: 'Noto Serif SC', serif;
+    margin-bottom: 24px;
+    color: var(--text-main);
+}
+
+.hero-exhibition-title .title-main {
+    display: block;
+    font-size: 48px;           /* 主标题显著放大，极具视觉分量 */
+    font-weight: 400;
+    letter-spacing: 6px;
+    line-height: 1.2;
+    margin-bottom: 10px;
+}
+
+.hero-exhibition-title .title-sub {
+    display: block;
+    font-size: 22px;           /* 副标题优雅衬托 */
+    font-weight: 300;
+    letter-spacing: 3px;
+    color: #444;
+    line-height: 1.4;
+}
+
+.hero-exhibition-desc {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.9;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    margin-bottom: 34px;
+    max-width: 480px;
+}
+
+/* 左侧与右侧画面实时联动的章节卡片 */
+.live-chapter-card {
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid var(--border-color);
+    padding: 16px 20px;
+    border-radius: 4px;
+    max-width: 440px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.live-chapter-card:hover {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.live-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+}
+
+.live-num {
+    font-family: 'Newsreader', serif;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+}
+
+.live-char {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: var(--text-main);
+}
+
+/* 5.5秒自动切换呼吸进度细线 */
+.progress-bar-bg {
+    width: 100%;
+    height: 2px;
+    background: #e2dfd8;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--text-main);
+}
+
+/* 左侧 9 字快速跳转栏 */
+.showcase-dots {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 36px;
+}
+
+.s-dot {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 2px;
+    border-bottom: 1.5px solid transparent;
+    transition: all 0.3s;
+}
+
+.s-dot:hover, .s-dot.active {
+    color: var(--text-main);
+    font-weight: 500;
+    border-bottom: 1.5px solid var(--text-main);
+}
+
+/* 进入展厅主按钮 */
+.enter-gallery-btn {
+    background: var(--text-main);
+    color: var(--bg-color);
+    border: none;
+    padding: 14px 28px;
+    font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2.5px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.enter-gallery-btn span {
+    transition: transform 0.3s ease;
+}
+
+.enter-gallery-btn:hover {
+    background: #333;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.enter-gallery-btn:hover span {
+    transform: translateX(5px);
+}
+
+/* 右侧：A3 竖版画作舞台 (占 52%) */
+.featured-right {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.showcase-stage {
+    position: relative;
+    height: 76vh;
+    max-height: 700px;
+    aspect-ratio: 1 / 1.414;   /* A3 竖版黄金比例 */
+    cursor: pointer;
+}
+
+.showcase-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.98);
+    transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.showcase-slide.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+.showcase-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #fff;
+    padding: 12px;
+    border-radius: 3px;
+    box-shadow: 0 22px 55px rgba(0,0,0,0.08);
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+
+.showcase-stage:hover .showcase-slide.active img {
+    transform: translateY(-5px);
+    box-shadow: 0 28px 65px rgba(0,0,0,0.13);
+}
+
+.showcase-arrow {
+    background: rgba(255,255,255,0.7);
+    border: 1px solid var(--border-color);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    font-size: 20px;
+    color: var(--text-main);
+    cursor: pointer;
+    margin: 0 28px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.showcase-arrow:hover {
+    background: var(--text-main);
+    color: var(--bg-color);
+    border-color: var(--text-main);
+}
+
+/* ==========================================
+   4. 作品集网格布局 (Archive Grid)
+   ========================================== */
+.exhibition-intro-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 14px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.exhibition-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: 2px;
+}
+
+.exhibition-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.archive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 40px;
+}
+
+.archive-item {
+    cursor: pointer;
+}
+
+.archive-img-box {
+    width: 100%;
+    aspect-ratio: 1 / 1.414;
+    max-height: 380px;
+    background: #eae6df;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+    transition: transform 0.4s ease;
+}
+
+.archive-item:hover .archive-img-box {
+    transform: translateY(-6px);
+}
+
+.archive-img-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholder-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eeebe3;
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 3px;
+}
+
+.archive-date {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.archive-info h3 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+/* ==========================================
+   5. 画廊内页专属全屏沉浸式系统 (Gallery Page)
+   ========================================== */
+body.gallery-page {
+    transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.gallery-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 60px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.back-link {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-decoration: none;
+    color: var(--text-main);
+    transition: opacity 0.3s;
+}
+
+.back-link:hover {
+    opacity: 0.6;
+}
+
+.gallery-top-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    letter-spacing: 2.5px;
+    color: var(--text-muted);
+}
+
+.bgm-control {
+    background: none;
+    border: 1px solid var(--border-color);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    color: var(--text-main);
+    transition: all 0.3s;
+}
+
+.bgm-control:hover {
+    background: var(--text-main);
+    color: var(--bg-color);
+}
+
+.gallery-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 90px 60px 90px;
+    gap: 70px;
+    position: relative;
+    overflow: hidden;
+}
+
+.gallery-left {
+    flex: 1.1;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.poster-stage {
+    height: 74vh;
+    max-height: 680px;
+    aspect-ratio: 1 / 1.414;
+    background: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.07);
+    position: relative;
+}
+
+.poster-stage img {
+    width: calc(100% - 20px);
+    height: calc(100% - 20px);
+    object-fit: contain;
+    opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    pointer-events: none;
+}
+
+.poster-stage img.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.gallery-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 500px;
+}
+
+.chapter-box {
+    display: none;
+    opacity: 0;
+    transform: translateY(12px);
+}
+
+.chapter-box.active {
+    display: block;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.chapter-badge {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(26, 26, 26, 0.12);
+}
+
+.badge-num {
+    font-family: 'Newsreader', serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+}
+
+.badge-divider {
+    font-size: 12px;
+    color: #ccc;
+}
+
+.badge-char {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    color: var(--text-main);
+}
+
+.chapter-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1.4;
+    margin-bottom: 26px;
+    letter-spacing: 2.5px;
+    color: var(--text-main);
+}
+
+.chapter-essay {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 2.15;
+    letter-spacing: 1.2px;
+    color: #2b2b2b;
+    margin-bottom: 36px;
+}
+
+.chapter-footnote {
+    font-family: 'Noto Sans SC', 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 300;
+    line-height: 1.85;
+    letter-spacing: 0.8px;
+    color: #6e6d68;
+    background: rgba(255, 255, 255, 0.55);
+    border-left: 2px solid #c8c4b8;
+    padding: 14px 18px;
+    border-radius: 0 4px 4px 0;
+}
+
+.footnote-label {
+    display: block;
+    font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    color: #99968e;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.gallery-footer {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 26px;
+    z-index: 20;
+}
+
+.nav-dot-btn {
+    background: none;
+    border: none;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 6px;
+    position: relative;
+}
+
+.nav-dot-btn:hover {
+    color: var(--text-main);
+}
+
+.nav-dot-btn.active {
+    color: var(--text-main);
+    font-weight: 500;
+    transform: translateY(-2px);
+}
+
+.nav-dot-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--text-main);
+    border-radius: 50%;
+}
+
+.page-nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.65);
+    border: 1px solid var(--border-color);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    font-size: 20px;
+    color: var(--text-main);
+}
+
+.page-nav-arrow:hover {
+    background: var(--text-main);
+    color: var(--bg-color);
+    border-color: var(--text-main);
+}
+
+.arrow-left { left: 28px; }
+.arrow-right { right: 28px; }
