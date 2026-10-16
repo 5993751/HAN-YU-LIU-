@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H A N Y U L I U | 个人数字展厅</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=Noto+Sans+SC:wght@300;400&family=Noto+Serif+SC:wght@200;300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="home-page">
+
+    <!-- 顶部导航与大标题区 -->
+    <header class="site-header">
+        <div class="logo-area">
+            <h1 class="site-title">H A N Y U &nbsp; L I U</h1>
+            <span class="site-subtitle">VISUAL ARCHIVE &amp; DIGITAL CURATOR</span>
+        </div>
+
+        <nav class="site-nav">
+            <button class="nav-btn active" id="btn-featured" onclick="switchTab('featured')">[ 当前展映 / Featured ]</button>
+            <button class="nav-btn" id="btn-archive" onclick="switchTab('archive')">[ 作品集 / Archive ]</button>
+        </nav>
+    </header>
+
+    <!-- 视图 1：【当前展映】（左文右画一体式美术馆布局） -->
+    <main id="view-featured" class="view-section active">
+        <div class="featured-split-layout">
+
+            <!-- 左侧：放大版展览主标题 + 实时联动的章节导览区 -->
+            <div class="featured-left">
+                <div class="meta-tag" id="feat-tag">01 CURRENT EXHIBITION — 2026</div>
+
+                <h2 class="hero-exhibition-title">
+                    <span class="title-main" id="feat-title-main">泡沫与微光</span>
+                    <span class="title-sub" id="feat-title-sub">黄金时代的个人思考与反思</span>
+                </h2>
+
+                <p class="hero-exhibition-desc" id="feat-desc">
+                    从泡沫初涌到人文微光的九个时代切面。一段关于经济膨胀、人文深耕、泡沫崩解与精神留存的视觉编年史。
+                </p>
+
+                <!-- 实时联动的当前展示画面信息卡（把左边的文字和右边的画紧密锁成一体） -->
+                <div class="live-chapter-card" onclick="enterGalleryAtCurrent()">
+                    <div class="live-card-top">
+                        <span class="live-num" id="live-num">01 / 09</span>
+                        <span class="live-char" id="live-char">涌 · 地面裂开了</span>
+                    </div>
+                    <!-- 5.5秒自动播放呼吸进度条 -->
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="slide-progress"></div>
+                    </div>
+                </div>
+
+                <!-- 9字快速预览点选栏 -->
+                <div class="showcase-dots" id="feat-dots"></div>
+
+                <!-- 醒目优雅的进入展厅主按钮 -->
+                <div class="hero-action">
+                    <button class="enter-gallery-btn" onclick="enterGalleryAtCurrent()">
+                        进入沉浸式展厅 / ENTER EXHIBITION <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧：A3 竖版海报自动流淌舞台 -->
+            <div class="featured-right">
+                <button class="showcase-arrow prev" onclick="moveSlide(-1)" title="上一幅">‹</button>
+
+                <div class="showcase-stage" id="feat-stage" onclick="enterGalleryAtCurrent()">
+                    <!-- 海报由 JS 从 projects-data.js 自动生成，方便以后一键换作品 -->
+                </div>
+
+                <button class="showcase-arrow next" onclick="moveSlide(1)" title="下一幅">›</button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 视图 2：【作品集 Archive】 -->
+    <main id="view-archive" class="view-section">
+        <div class="exhibition-intro-compact">
+            <div class="intro-left">
+                <span class="meta-tag">COLLECTIONS &amp; WORKS</span>
+                <h2 class="exhibition-title">作品合集与独立档案</h2>
+            </div>
+            <p class="exhibition-desc">收录历年视觉实验、独立企划与专题研究项目</p>
+        </div>
+
+        <!-- 作品集网格由 JS 从 projects-data.js 自动生成 -->
+        <div class="archive-grid" id="archive-grid-container"></div>
+    </main>
+
+    <!-- 先引入作品数据总控台，再引入主交互脚本 -->
+    <script src="js/projects-data.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
