@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品展厅 | H A N Y U L I U</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400&family=LXGW+WenKai+TC:wght@300;400&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="gallery-page">
+
+    <!-- 页面丝滑呼吸转场帷幕 -->
+    <div class="page-transition-curtain" id="pageCurtain"></div>
+
+    <!-- 纯粹粗糙棉浆画纸纹理层（无背景动图干扰，专注呈现任何风格的作品与严肃随笔） -->
+    <div class="rough-paper-texture"></div>
+
+    <!-- 顶栏 -->
+    <header class="gallery-topbar">
+        <a href="javascript:void(0)" class="back-link" onclick="smoothNavigate('index.html')">← 返回个人小站</a>
+        <div class="gallery-top-title" id="gal-top-title"></div>
+
+        <div class="gallery-music-area">
+            <button class="bgm-control" id="galBgmBtn" onclick="toggleGalleryBGM()">
+                <span class="sound-wave" id="galWave"><i></i><i></i><i></i></span>
+                <span id="galBgmText">♪ 开启展厅配乐</span>
+            </button>
+            <audio id="galAudio" preload="auto"></audio>
+        </div>
+    </header>
+
+    <!-- 主体画廊空间 -->
+    <div class="gallery-container" id="gal-container">
+        <button class="page-nav-arrow arrow-left" onclick="changeChapter(-1)" title="上一页">‹</button>
+        <button class="page-nav-arrow arrow-right" onclick="changeChapter(1)" title="下一页">›</button>
+
+        <div class="gallery-left" id="gal-left-stage"></div>
+        <div class="gallery-right" id="gal-right-notes"></div>
+    </div>
+
+    <!-- 底部微缩指针导航 -->
+    <footer class="gallery-footer" id="gal-footer-dots"></footer>
+    <!-- 1. 先引入全局设置 -->
+    <script src="data/site-settings.js"></script>
+
+    <!-- 2. 再依次引入你拆分出来的独立小册子 -->
+    <script src="data/work-1.js"></script>
+    <script src="data/work-2.js"></script>
+    <!-- 以后有 work-3、work-4，就在这里加一行 script -->
+    <!-- 3. 引入总目录（它负责把上面的小册子收集起来） -->
+    <script src="data/works-data.js"></script>
+
+    <!-- 4. 最后引入引擎（让机器开动） -->
+    <script src="js/engine.js"></script>
+</body>
+</html>
+</body>
+</html>
