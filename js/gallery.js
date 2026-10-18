@@ -1,39 +1,70 @@
 /* =========================================================
    万能展厅 (js/gallery.js)
-   逐章渲染 / 章节主题变色（色彩表见 data/themes.js）/ 换章切歌
-   ⭐ 2026-10：章节图片懒加载 + 手机端翻章自动回顶修复
+   逐章渲染 / 章节主题变色 / 换章切歌 / 记忆碎片零散浮现引擎
    ========================================================= */
 
 let currentGalleryProject = null;
 let currentChapter = 1;
+let scatterTimers = []; // 记录多图散落浮现的定时器，翻页时随时清理
+
+function clearScatterTimers() {
+    scatterTimers.forEach(t => clearTimeout(t));
+    scatterTimers = [];
+}
 
 function openGallerySpace(workId, startCh = 1) {
     currentGalleryProject = WORKS_DATA.projects.find(p => p.id === workId) || WORKS_DATA.projects[0];
     if (!currentGalleryProject) return;
 
     stopAutoSlide();
+    clearScatterTimers();
 
     const galContainer = document.getElementById('gal-container');
     const leftStage = document.getElementById('gal-left-stage');
     const rightNotes = document.getElementById('gal-right-notes');
     const footerDots = document.getElementById('gal-footer-dots');
 
-    // ⭐ 判断是否为第2篇专属的“宽银幕电影感”布局
     if (galContainer) {
         galContainer.classList.toggle('cinematic-mode', currentGalleryProject.layoutMode === 'cinematic');
+        galContainer.classList.toggle('minimal-scatter-mode', currentGalleryProject.layoutMode === 'minimal-scatter');
     }
 
-    setText('gal-top-title', `${currentGalleryProject.titleMain} · ${currentGalleryProject.titleSub}`);
+    // ⭐ 若无副标题（如第3篇），顶栏只显示主标题，不出现多余圆点
+    const topTitleText = currentGalleryProject.titleSub
+        ? `${currentGalleryProject.titleMain} · ${currentGalleryProject.titleSub}`
+        : currentGalleryProject.titleMain;
+    setText('gal-top-title', topTitleText);
+
     leftStage.innerHTML = ''; rightNotes.innerHTML = ''; footerDots.innerHTML = '';
 
     currentGalleryProject.items.forEach((item, idx) => {
         const indexNum = idx + 1;
-        // ⭐ 改动 1：网址存进 data-src（不下载），翻章时才由 updateGallery 装载
-        leftStage.innerHTML += item.type === 'text'
-            ? `<div class="gal-slide-item" data-index="${indexNum}"><div class="text-only-card"><h3>${item.title}</h3><p>${item.essay}</p></div></div>`
-            : `<div class="gal-slide-item" data-index="${indexNum}"><div class="art-frame-wrapper"><img data-src="${item.src}" alt="${item.title}"></div></div>`;
 
-        // 如果 footnote 为空，则完全不生成简评框
+        // ⭐ 判断是否配置了多图零散浮现数组 (scatterImages)
+        if (item.scatterImages && item.scatterImages.length > 0) {
+            const cardsHTML = item.scatterImages.map((sc, sIdx) => `
+                <div class="scatter-card ${sc.isFinal ? 'is-final' : ''}" data-step="${sIdx}"
+                     style="--sx:${sc.x || '0%'}; --sy:${sc.y || '0%'}; --srot:${sc.rot || '0deg'}; --sscale:${sc.scale || 1};">
+                    <img data-src="${sc.src}" alt="">
+                </div>
+            `).join('');
+
+            leftStage.innerHTML += `
+                <div class="gal-slide-item scatter-stage-item" data-index="${indexNum}" onclick="replayScatterCurrent()" title="轻触画面可重新播放这组记忆碎片">
+                    <div class="scatter-canvas">${cardsHTML}</div>
+                </div>`;
+        } else if (item.type === 'text') {
+            leftStage.innerHTML += `
+                <div class="gal-slide-item" data-index="${indexNum}">
+                    <div class="text-only-card"><h3>${item.title}</h3><p>${item.essay}</p></div>
+                </div>`;
+        } else {
+            leftStage.innerHTML += `
+                <div class="gal-slide-item" data-index="${indexNum}">
+                    <div class="art-frame-wrapper"><img data-src="${item.src}" alt="${item.title}"></div>
+                </div>`;
+        }
+
         const footnoteHTML = item.footnote ? `<div class="chapter-footnote"><span class="footnote-label">SCENE NOTE · 画面白描</span>${item.footnote}</div>` : '';
 
         rightNotes.innerHTML += `
@@ -64,6 +95,10 @@ function openGallerySpace(workId, startCh = 1) {
 }
 
 function closeGalleryToHome() {
+    clearScatterTimers();
+    const galContainer = document.getElementById('gal-container');
+    if (galContainer) galContainer.classList.remove('cinematic-mode', 'minimal-scatter-mode');
+
     document.body.classList.remove('mode-gallery', 'dark-chapter');
     document.body.classList.add('mode-home');
     document.body.style.backgroundColor = 'var(--paper-base)';
@@ -71,14 +106,55 @@ function closeGalleryToHome() {
     document.getElementById('space-gallery').classList.remove('active');
     document.getElementById('space-home').classList.add('active');
 
-    // ⭐ 修复第5点：从画廊返回主页时，绝对不再打断当前正在听的音乐！让它在主页继续播放！
-    // 只把歌单列表补充回全局列表，但不触发切歌
     if (hallPlaylist.length > 0) {
         activePlaylist = hallPlaylist;
         const nextBtn = document.getElementById('globalNextBtn');
         if (nextBtn) nextBtn.style.display = activePlaylist.length > 1 ? 'inline-flex' : 'none';
     }
     startAutoSlide();
+}
+
+/* ⭐ 核心引擎：启动当前章节的“多图零散浮现”序列（上一张淡淡隐去，下一张在另一处柔和浮现，直至最后一张定格） */
+function startScatterSequence(chapterIndex) {
+    clearScatterTimers();
+    if (!currentGalleryProject) return;
+    const item = currentGalleryProject.items[chapterIndex - 1];
+    if (!item || !item.scatterImages || item.scatterImages.length === 0) return;
+
+    const slideEl = document.querySelector(`.gal-slide-item[data-index="${chapterIndex}"]`);
+    if (!slideEl) return;
+
+    // 预装载本章所有碎片图片
+    slideEl.querySelectorAll('img[data-src]').forEach(img => {
+        img.src = img.dataset.src;
+        img.removeAttribute('data-src');
+    });
+
+    const cards = slideEl.querySelectorAll('.scatter-card');
+    if (cards.length === 0) return;
+
+    // 重置所有碎片状态
+    cards.forEach(c => c.classList.remove('visible', 'fading-out'));
+
+    const stepTime = item.scatterInterval || 3200;
+
+    cards.forEach((card, idx) => {
+        // 依次浮现
+        const showTimer = setTimeout(() => {
+            if (idx > 0) {
+                cards[idx - 1].classList.remove('visible');
+                cards[idx - 1].classList.add('fading-out');
+            }
+            card.classList.remove('fading-out');
+            card.classList.add('visible');
+        }, idx * stepTime + 80);
+
+        scatterTimers.push(showTimer);
+    });
+}
+
+function replayScatterCurrent() {
+    startScatterSequence(currentChapter);
 }
 
 function updateGallery(index) {
@@ -91,8 +167,10 @@ function updateGallery(index) {
     const slides = document.querySelectorAll('.gal-slide-item');
     slides.forEach(s => s.classList.toggle('active', parseInt(s.dataset.index) === currentChapter));
 
-    // ⭐ 改动 2：翻到哪章，才装载哪章和相邻两章的图片
     lazyLoadSlideImages(document.getElementById('gal-left-stage'), currentChapter);
+
+    // ⭐ 若当前章是多图散落模式，立即启动散落浮现序列
+    startScatterSequence(currentChapter);
 
     const boxes = document.querySelectorAll('.chapter-box');
     let activeTheme = 'warm';
@@ -106,24 +184,17 @@ function updateGallery(index) {
     });
 
     document.body.style.backgroundColor = themes[activeTheme] || '#f2ede2';
-    // 深色主题自动把文字切换为柔和浅色（名单统一放在 data/themes.js 的 DARK_THEMES）
     const isDarkTheme = DARK_THEMES.includes(activeTheme);
     document.body.classList.toggle('dark-chapter', isDarkTheme);
     document.body.setAttribute('data-active-theme', activeTheme);
 
-    // 每次翻页时，右侧长文章滚动条自动回到顶部
     const rightNotes = document.getElementById('gal-right-notes');
     if (rightNotes) rightNotes.scrollTop = 0;
 
-    // ⭐ 改动 3：手机端布局下滚动条在外层容器上，同步归零（电脑端该容器
-    // 不可滚动，下面两行等于空操作，零影响）——修复手机翻章停在上次位置
     const galScrollBox = document.getElementById('gal-container');
     if (galScrollBox) galScrollBox.scrollTop = 0;
-        // ⭐ 手机端展厅改用整页滚动后，翻章时把整页拉回顶部
-    //（仅 ≤900px 时执行，电脑端永远不触发，零影响）
     if (window.innerWidth <= 900) window.scrollTo(0, 0);
 
-    // ⭐ 这里就是帮你加好的“一章一曲自动切歌”逻辑！
     const currentItem = currentGalleryProject.items[currentChapter - 1];
     if (currentItem && currentItem.bgmSrc) {
         const itemTrack = { title: currentItem.bgmTitle || currentItem.title, src: currentItem.bgmSrc };

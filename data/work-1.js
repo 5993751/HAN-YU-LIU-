@@ -4,12 +4,12 @@
 const WORK_1 = {
     id: "work-1",
     isReady: true,
-    tag: "2026 · 近期整理的一组视觉思考（共九章）",
+    tag: "2026 · 一组视觉思考（共九章）",
     titleMain: "泡沫与微光",
-    titleSub: "关于黄金时代的一点个人思考",
-    homeIntro: "有时候会好奇，当一个热闹的时代像泡泡一样升起又破掉之后，留在普通人生活里的到底是什么？在这里，图像是思考的载体，文字是记忆的注脚，试着去打捞那些膨胀、碎裂与被重新拾起的瞬间。",
-    enterBtnText: "翻开这组作品 →",
-    archiveDate: "2026 · 9 Chapters",
+    titleSub: "226.9.30",
+    homeIntro: "有时候会好奇，当一个热闹的时代像泡泡一样升起又破掉之后，留在普通人生活里的到底是什么？",
+    enterBtnText: "翻开 →",
+    archiveDate: "",
     cover: "assets/work-1/03.webp",
 
     // 展厅配乐

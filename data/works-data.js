@@ -6,12 +6,13 @@
 const WORKS_DATA = {
 
     // ⭐ 主页左边大版面，当前主打展示哪个作品？（写对应的 id）
-    featuredWorkId: "work-1",
+    featuredWorkId: "work-2",
 
     // 📦 网站所有的作品集合
     projects: [
         WORK_1,
-        WORK_2
+        WORK_2,
+        WORK_3
         // 以后你新建了 work-3.js，在这里加上 WORK_3, 就可以啦！
     ]
 };

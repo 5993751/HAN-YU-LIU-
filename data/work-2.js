@@ -7,10 +7,10 @@ const WORK_2 = {
     layoutMode: "cinematic", // ⭐ 专属开关：开启第二篇独有的“宽银幕电影感”张力布局（仅影响第2篇，不影响第1篇）
     tag: "2026 · 个人随笔与视觉切片",
     titleMain: "【随笔】长眠与飞翔",
-    titleSub: "有关宁静与死亡的个人思考",
+    titleSub: "2026.10.16",
     homeIntro: "从冷酷的终点，到白色的中转，再到卸去所有重力后的漫长升腾。",
-    enterBtnText: "翻开这组随笔 →",
-    archiveDate: "2026 · 3 Chapters Essay",
+    enterBtnText: "翻开 →",
+    archiveDate: "",
     cover: "assets/work-2/01.webp",
 
     bgm: [

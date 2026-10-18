@@ -12,8 +12,8 @@ const SITE_SETTINGS = {
     navArchiveText: "个人记录",
 
     // 3. 左上角“近期碎碎念便签”（随时在这里更新你的近况）
-    moodDate: "2026.10 · 近况记录",
-    moodText: "一些关于时代记忆的视觉碎片，把前阵子完成的九张图收进了这里。",
+    moodDate: "2026.9.30",
+    moodText: "一些关于时代记忆的视觉碎片。",
 
     // 4. 「个人记录」页面说明
     archivePageTitle: "个人记录",

@@ -22,8 +22,13 @@ const themes = {
     'w1-crash': '#1f2124',   // 06 裂：崩盘瞬间纪实冷峻铁灰（深色模式）
     'w1-ruins': '#ebecee',   // 07 寂：空城废墟清冷雾白
     'w1-gather': '#eaede6',  // 08 拾：写生浅苔绿温润纸色
-    'w1-dawn': '#f4efe4'     // 09 留：平淡余温柔和晨光米色
+    'w1-dawn': '#f4efe4',     // 09 留：平淡余温柔和晨光米色
+    // ⭐ 第三篇《将会成为怎样的大人呢？》4个章节专属氛围底色
+    'w3-night': '#161b26',   // 壹：童年河堤静谧夜空蓝（深色模式）
+    'w3-mirror': '#eef0f3',  // 贰：青春镜前迷雾素描白
+    'w3-sunset': '#f2e4d5',  // 叁：夕阳炽热余晖暖暮色
+    'w3-starry': '#11151e'   // 肆：终局草地浩瀚星空黑蓝（深色模式）
 };
 
 // 深色主题名单：章节翻到这些主题时，自动切换深色文字模式（body.dark-chapter）
-const DARK_THEMES = ['abyss', 'w1-neon', 'w1-crash'];
+const DARK_THEMES = ['abyss', 'w1-neon', 'w1-crash', 'w3-night', 'w3-starry'];
