@@ -6,7 +6,7 @@ const WORK_1 = {
     isReady: true,
     tag: "2026 · 一组视觉思考（共九章）",
     titleMain: "泡沫与微光",
-    titleSub: "226.9.30",
+    titleSub: "2026.9.30",
     homeIntro: "有时候会好奇，当一个热闹的时代像泡泡一样升起又破掉之后，留在普通人生活里的到底是什么？",
     enterBtnText: "翻开 →",
     archiveDate: "",
