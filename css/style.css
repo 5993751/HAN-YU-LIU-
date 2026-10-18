@@ -791,3 +791,133 @@ body[data-active-theme="w3-sunset"] .gal-slide-item .art-frame-wrapper img {
         max-height: calc(40dvh - 34px);
     }
 }
+/* =========================================================
+   13. 🎬 观展终章：谢幕推荐卡片（2026-10 新增）
+   读完一部作品最后一章后弹出，随机推荐下一间展厅。
+   ========================================================= */
+
+.finale-overlay {
+    position: fixed; inset: 0; z-index: 220;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    background: rgba(34, 29, 22, 0.46);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.45s ease;
+}
+
+.finale-overlay.show { opacity: 1; pointer-events: auto; }
+
+.finale-card {
+    width: min(460px, 100%);
+    max-height: calc(100vh - 48px);
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    background: #f6f1e7;
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 26px 64px rgba(30, 25, 18, 0.30);
+    border-radius: 4px;
+    padding: 40px 38px 28px;
+    text-align: center;
+    transform: translateY(16px) scale(0.985);
+    transition: transform 0.55s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+
+.finale-overlay.show .finale-card { transform: translateY(0) scale(1); }
+
+.finale-eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px; letter-spacing: 5px;
+    color: var(--ink-muted);
+    margin-bottom: 14px;
+}
+
+.finale-title {
+    font-size: 26px; font-weight: 400; letter-spacing: 10px; text-indent: 10px;
+    color: var(--ink-main);
+    margin-bottom: 10px;
+}
+
+.finale-sub { font-size: 14px; color: var(--ink-secondary); letter-spacing: 1px; }
+.finale-sub #finale-work-name { color: var(--ink-main); }
+
+.finale-divider {
+    display: flex; align-items: center; gap: 14px;
+    margin: 28px 0 20px;
+    font-size: 11px; letter-spacing: 4px;
+    color: var(--ink-muted);
+}
+
+.finale-divider::before,
+.finale-divider::after {
+    content: ""; flex: 1; height: 1px;
+    background: var(--border-soft);
+}
+
+.finale-rec {
+    text-align: center;
+}
+
+.finale-rec-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 20px; font-weight: 400; letter-spacing: 2.5px;
+    color: var(--ink-main); line-height: 1.7;
+    margin-bottom: 8px;
+}
+
+.finale-rec-date {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12.5px; letter-spacing: 3px;
+    color: var(--ink-muted);
+}
+
+.finale-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+
+.finale-btn-primary {
+    font-family: inherit;
+    font-size: 14px; letter-spacing: 6px; text-indent: 6px;
+    color: #f6f1e7; background: var(--ink-main);
+    border: 1px solid var(--ink-main);
+    padding: 13px 20px;
+    cursor: pointer; border-radius: 3px;
+    transition: opacity 0.25s ease, transform 0.2s ease;
+}
+
+.finale-btn-primary:hover { opacity: 0.88; }
+.finale-btn-primary:active { transform: scale(0.97); }
+
+.finale-btn-ghost {
+    font-family: inherit;
+    font-size: 13px; letter-spacing: 4px; text-indent: 4px;
+    color: var(--ink-secondary);
+    background: transparent;
+    border: 1px solid var(--border-soft);
+    padding: 11px 20px;
+    cursor: pointer; border-radius: 3px;
+    transition: color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+}
+
+.finale-btn-ghost:hover { color: var(--ink-main); border-color: var(--ink-muted); }
+.finale-btn-ghost:active { transform: scale(0.97); }
+
+.finale-hint {
+    margin-top: 18px;
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--ink-muted); opacity: 0.85;
+}
+
+/* 手机端：推荐卡竖排（仅 ≤900px 生效，电脑端不受影响） */
+@media screen and (max-width: 900px) {
+    .finale-overlay { padding: 18px; }
+    .finale-card {
+        padding: 32px 24px 22px;
+        max-height: calc(100vh - 36px);
+        max-height: calc(100dvh - 36px);
+    }
+    .finale-title { font-size: 22px; letter-spacing: 7px; text-indent: 7px; }
+    .finale-rec { flex-direction: column; }
+    .finale-rec-cover { width: 100%; min-height: 150px; }
+}
+.finale-rec-info { display: flex; align-items: center; }
+.finale-rec-info h3 { margin: 0; }

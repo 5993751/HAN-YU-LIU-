@@ -133,6 +133,31 @@
 
         <footer class="gallery-footer" id="gal-footer-dots"></footer>
     </div>
+    <!-- =====================================================
+     观展终章：谢幕卡片（读完一部作品后，随机推荐下一间展厅）
+     ===================================================== -->
+    <div class="finale-overlay" id="finaleOverlay" onclick="if(event.target === this) finaleDismiss()">
+        <div class="finale-card">
+            <div class="finale-eyebrow">EXHIBITION COMPLETE</div>
+            <h2 class="finale-title">感谢观看</h2>
+            <p class="finale-text">希望您能够喜欢</p>
+
+            <div class="finale-divider"><span>为你推荐</span></div>
+
+            <div class="finale-rec" id="finale-rec">
+                <h3 class="finale-rec-title" id="finale-next-title"></h3>
+                <span class="finale-rec-date" id="finale-next-date"></span>
+            </div>
+
+            <div class="finale-actions">
+                <button class="finale-btn-primary" id="finale-enter-btn" onclick="finaleEnterNext()">下一篇 →</button>
+                <button class="finale-btn-ghost" onclick="finaleReplayCurrent()">返回开头</button>
+                <button class="finale-btn-ghost" onclick="closeGalleryToHome()">返回大厅</button>
+            </div>
+
+            <div class="finale-hint">轻触卡片外任意处关闭</div>
+        </div>
+    </div>
 
     <!-- =====================================================
          全局唯一智能留声机（跨大厅与展厅自动比对曲目）
