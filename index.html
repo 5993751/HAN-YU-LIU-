@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 加入 viewport 标签，让手机端能够正确识别宽度比例 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 手机浏览器地址栏染成纸张色（电脑端自动忽略） -->
+    <meta name="theme-color" content="#f2ede2">
+    <!-- 防止 iOS 把正文里的数字误识别成电话号码（电脑端自动忽略） -->
+    <meta name="format-detection" content="telephone=no">
+    <title>H A N Y U L I U | 个人视觉与思考记录</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400&family=LXGW+WenKai+TC:wght@300;400&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- 恢复统一使用单一的 style.css，保证样式绝对不丢失 -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="mode-home">
+
+    <!-- 页面丝滑呼吸转场帷幕 -->
+    <div class="page-transition-curtain" id="pageCurtain"></div>
+
+    <!-- 1. 首页专属：高透亮吉卜力微风动态背景层 -->
+    <div class="home-breeze-layer" id="breezeContainer">
+        <div class="breeze-slot active" id="breezeSlotA">
+            <div class="breeze-clone clone-1"></div>
+            <div class="breeze-clone clone-2"></div>
+        </div>
+        <div class="breeze-slot" id="breezeSlotB">
+            <div class="breeze-clone clone-1"></div>
+            <div class="breeze-clone clone-2"></div>
+        </div>
+        <!-- 淡淡薄纱层 -->
+        <div class="breeze-thin-veil"></div>
+    </div>
+
+    <!-- 2. 古朴粗糙画纸杂色与颗粒层 -->
+    <div class="vintage-paper-grain"></div>
+
+    <!-- =====================================================
+         空间 A：【首页大厅】（近期作品 & 个人记录）
+         ===================================================== -->
+    <div id="space-home" class="space-wrapper active">
+        <header class="site-header">
+            <div class="logo-area">
+                <h1 class="site-title" id="ui-site-title">H A N Y U &nbsp; L I U</h1>
+                <span class="site-subtitle" id="ui-site-subtitle">VISUAL ARCHIVE &amp; DIGITAL CURATOR</span>
+            </div>
+
+            <nav class="site-nav">
+                <button class="nav-btn active" id="btn-featured" onclick="switchTab('featured')">近期作品</button>
+                <button class="nav-btn" id="btn-archive" onclick="switchTab('archive')">个人记录</button>
+            </nav>
+        </header>
+
+        <main id="view-featured" class="view-section active">
+            <div class="featured-split-layout">
+
+                <div class="featured-left">
+                    <div class="mood-note-box">
+                        <div class="mood-header">
+                            <span class="mood-dot"></span>
+                            <span class="mood-date" id="ui-mood-date"></span>
+                        </div>
+                        <p class="mood-content" id="ui-mood-text"></p>
+                    </div>
+
+                    <div class="work-intro-block">
+                        <div class="meta-tag" id="feat-tag"></div>
+                        <h2 class="hero-exhibition-title">
+                            <span class="title-main" id="feat-title-main"></span>
+                            <span class="title-sub" id="feat-title-sub"></span>
+                        </h2>
+                        <p class="hero-exhibition-desc" id="feat-desc"></p>
+                    </div>
+
+                    <div class="live-chapter-card" onclick="enterGalleryAtCurrent()">
+                        <div class="live-card-top">
+                            <span class="live-num" id="live-num">01 / 09</span>
+                            <span class="live-char" id="live-char"></span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="slide-progress"></div>
+                        </div>
+                    </div>
+
+                    <div class="showcase-dots" id="feat-dots"></div>
+
+                    <div class="hero-action">
+                        <button class="enter-gallery-btn" id="feat-enter-btn" onclick="enterGalleryAtCurrent()">
+                            翻开这组作品 →
+                        </button>
+                    </div>
+                </div>
+
+                <div class="featured-right">
+                    <button class="showcase-arrow prev" onclick="moveSlide(-1)" title="上一页">‹</button>
+                    <div class="showcase-stage" id="feat-stage" onclick="enterGalleryAtCurrent()"></div>
+                    <button class="showcase-arrow next" onclick="moveSlide(1)" title="下一页">›</button>
+                </div>
+
+            </div>
+        </main>
+
+        <main id="view-archive" class="view-section">
+            <div class="exhibition-intro-compact">
+                <div class="intro-left">
+                    <h2 class="exhibition-title" id="ui-archive-title">个人记录</h2>
+                </div>
+                <p class="exhibition-desc" id="ui-archive-desc"></p>
+            </div>
+            <div class="archive-grid" id="archive-grid-container"></div>
+        </main>
+    </div>
+
+    <!-- =====================================================
+         空间 B：【万能展厅内页】（原版空间折叠逻辑，保证互斥）
+         ===================================================== -->
+    <div id="space-gallery" class="space-wrapper">
+        <header class="gallery-topbar">
+            <a href="javascript:void(0)" class="back-link" onclick="closeGalleryToHome()">← 返回个人小站</a>
+            <div class="gallery-top-title" id="gal-top-title"></div>
+            <div class="gallery-music-placeholder"></div>
+        </header>
+
+        <div class="gallery-container" id="gal-container">
+            <button class="page-nav-arrow arrow-left" onclick="changeChapter(-1)" title="上一页">‹</button>
+            <button class="page-nav-arrow arrow-right" onclick="changeChapter(1)" title="下一页">›</button>
+
+            <div class="gallery-left" id="gal-left-stage"></div>
+            <div class="gallery-right" id="gal-right-notes"></div>
+        </div>
+
+        <footer class="gallery-footer" id="gal-footer-dots"></footer>
+    </div>
+
+    <!-- =====================================================
+         全局唯一智能留声机（跨大厅与展厅自动比对曲目）
+         ===================================================== -->
+    <div class="global-music-dock" id="musicDock">
+        <button class="music-toggle-btn" id="globalPlayBtn" onclick="toggleGlobalMusic()">
+            <span class="sound-wave" id="globalWave"><i></i><i></i><i></i></span>
+            <span id="globalTrackName">♪ 留声机：轻触开启配乐</span>
+        </button>
+        <button class="music-next-btn" id="globalNextBtn" onclick="nextGlobalMusic()" title="切换下一首" style="display:none;">⏭</button>
+        <audio id="masterAudio" preload="metadata"></audio>
+    </div>
+
+    <script src="data/site-settings.js"></script>
+    <script src="data/work-1.js"></script>
+    <script src="data/work-2.js"></script>
+    <script src="data/works-data.js"></script>
+    <script src="data/themes.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/breeze.js"></script>
+    <script src="js/home.js"></script>
+    <script src="js/music.js"></script>
+    <script src="js/gallery.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/touch.js"></script>
+</body>
+</html>
