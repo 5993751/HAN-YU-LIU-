@@ -6,7 +6,7 @@
 const WORKS_DATA = {
 
     // ⭐ 主页左边大版面，当前主打展示哪个作品？（写对应的 id）
-    featuredWorkId: "work-2",
+    featuredWorkId: "work-1",
 
     // 📦 网站所有的作品集合
     projects: [
