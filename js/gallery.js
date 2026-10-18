@@ -119,6 +119,9 @@ function updateGallery(index) {
     // 不可滚动，下面两行等于空操作，零影响）——修复手机翻章停在上次位置
     const galScrollBox = document.getElementById('gal-container');
     if (galScrollBox) galScrollBox.scrollTop = 0;
+        // ⭐ 手机端展厅改用整页滚动后，翻章时把整页拉回顶部
+    //（仅 ≤900px 时执行，电脑端永远不触发，零影响）
+    if (window.innerWidth <= 900) window.scrollTo(0, 0);
 
     // ⭐ 这里就是帮你加好的“一章一曲自动切歌”逻辑！
     const currentItem = currentGalleryProject.items[currentChapter - 1];

@@ -494,3 +494,53 @@ body[data-active-theme="w1-crash"] .chapter-footnote { background: rgba(42, 46, 
         max-height: calc(100dvh - 195px);
     }
 }
+/* =========================================================
+   12.7 📜 手机竖屏展厅改为整页自然滚动（2026-10 三次增补）
+   病因：原手机端沿用电脑端的“内层固定窗口滚动”，在手机上
+   会卡住滑不动。本区块把竖屏展厅改成与首页一致的整页滚动。
+   仅 ≤900px 且竖屏时生效；电脑端、横屏均不读取。
+   ========================================================= */
+@media screen and (max-width: 900px) and (orientation: portrait) {
+
+    /* 展厅空间：解除固定高度，让整页自然生长 */
+    #space-gallery.active { height: auto; overflow: visible; }
+
+    /* 顶部返回栏：悬浮固定在顶部，随时可点返回；
+       留声机挂件（右上角）正好嵌在它上面 */
+    .gallery-topbar {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+        background: rgba(242, 237, 226, 0.92);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+    /* 深色章节（裂/深渊）时返回栏同步变深，保证文字可读 */
+    body.dark-chapter .gallery-topbar {
+        background: rgba(30, 27, 22, 0.94);
+    }
+
+    /* 图片区 + 正文区：解除内层滚动窗口，改为自然上下排列 */
+    .gallery-container,
+    .gallery-container.cinematic-mode {
+        display: block;
+        height: auto;
+        overflow: visible;
+        padding: 76px 24px 130px 24px;   /* 顶部让位悬浮栏，底部让位固定翻页控件 */
+    }
+    .gallery-left,
+    .gallery-container.cinematic-mode .gallery-left {
+        width: 100%;
+        height: 40dvh;
+        min-height: 230px;
+        margin-bottom: 30px;             /* 补回图片与正文的间距 */
+    }
+    .gallery-right {
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
+    }
+
+    /* 翻页箭头：改为悬浮固定，不随页面滚走 */
+    .page-nav-arrow { position: fixed; }
+}
