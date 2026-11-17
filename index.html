@@ -112,7 +112,7 @@
                             <button class="enter-gallery-btn" id="feat-enter-btn" onclick="enterGalleryAtCurrent()">
                                 翻开这组作品 →
                             </button>
-                            <p class="rotate-hint">横屏浏览，更接近展陈的排布</p>
+                            <p class="rotate-hint">推荐使用横屏访问</p>
                         </div>
                     </div>
 
@@ -213,7 +213,7 @@
         <button class="music-toggle-btn" id="globalPlayBtn" onclick="toggleGlobalMusic()">
             <span class="vinyl-disc" id="globalWave"></span>
             <canvas class="audio-viz" id="audioViz" width="34" height="14"></canvas>
-            <span id="globalTrackName">♪ 留声机：轻触开启配乐</span>
+            <span class="music-state" id="globalMusicState">♪ 留声机：</span><span id="globalTrackName">轻触开启配乐</span>
         </button>
         <button class="music-next-btn" id="globalNextBtn" onclick="nextGlobalMusic()" title="切换下一首" style="display:none;">⏭</button>
         <audio id="masterAudio" preload="metadata"></audio>
