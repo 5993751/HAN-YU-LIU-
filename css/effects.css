@@ -1,0 +1,398 @@
+/* =========================================================
+   css/effects.css —— 新增视觉效果层（第 4 层，最后加载）
+   ---------------------------------------------------------
+   约定：
+   1. 以后所有新效果只往本文件末尾追加，不改 base / home / gallery。
+   2. 每段用编号标题隔开，删掉某一段即可完整还原，不留残迹。
+   3. 本层晚于前三层加载，同权重冲突时以本文件为准。
+   ---------------------------------------------------------
+   已收录：
+   09 文字选区
+   01 纸面颗粒缓慢游走 + 边缘漏光
+   03 标题字距收拢（首页大标题 / 个人记录）
+   07 图片显影（底片转清晰）
+   20 滚动驱动（滚到哪，内容在哪浮现）
+   24 章节色温过渡（同色系薄雾缓慢漂移）
+   11 音频可视化流声机（黑胶小唱片 + 真实频谱）
+   22 水墨淡变转场（两栏淡去，纸色在两章之间慢慢混色）
+   23 进场幕布（冷灰噪点 + 暖光 → 轻点进入 → 三滴墨散开）
+   ========================================================= */
+
+/* —— 09 文字选区：暖金半透明底，字仍保持墨色，深浅章节都读得清 —— */
+::selection { background-color: rgba(193, 154, 91, 0.34); color: var(--ink-main); text-shadow: none; }
+
+/* —— 01 纸面颗粒：只挪背景位置，不动透明度（避免覆盖展厅里的加深值） —— */
+.vintage-paper-grain { animation: grainShift 7s steps(4, end) infinite; }
+@keyframes grainShift {
+    0%, 100% { background-position: center, 0 0, 0 0; }
+    25%      { background-position: center, 10px 7px, -9px 6px; }
+    50%      { background-position: center, -8px 12px, 11px -9px; }
+    75%      { background-position: center, 6px -11px, -12px 8px; }
+}
+
+/* —— 01 边缘漏光：左上暖金斜光 + 右下暗角，压在内容之下，只染纸面 —— */
+.paper-light-leak {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    background:
+        radial-gradient(ellipse 78% 62% at 4% -12%, rgba(255, 214, 148, 0.62), rgba(255, 214, 148, 0) 66%),
+        radial-gradient(ellipse 60% 52% at 100% 106%, rgba(90, 74, 52, 0.22), rgba(90, 74, 52, 0) 72%);
+    opacity: 0.95;
+    animation: lightLeakShift 90s ease-in-out infinite alternate;
+}
+@keyframes lightLeakShift {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(-0.9%, 0.6%, 0) scale(1.03); }
+}
+body.mode-gallery .paper-light-leak { opacity: 0.35; }
+
+/* —— 03 首页大标题：进入时横向收拢一次
+      用 scaleX 代替 letter-spacing：字距不再参与排版计算，换行位置全程不变，
+      不会出现「先挤成三行、再跳回两行」的闪烁；终值仍是 base/home 里的原样 —— */
+#view-featured.active .hero-exhibition-title .title-main {
+    transform-origin: left center;
+    animation: titleTrackingIn 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes titleTrackingIn {
+    0%   { opacity: 0; transform: scaleX(1.045); }
+    70%  { opacity: 1; }
+    100% { opacity: 1; transform: scaleX(1); }
+}
+
+/* —— 03 同一效果的第二落点：个人记录里的作品标题
+      按类名生效，以后在 data 里新增作品，列表自动带上，无需改这里
+      只收字距、不加淡入：列表会被筛选/搜索反复重绘，淡入会闪 —— */
+.ai-title { animation: listTitleTracking 1.1s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes listTitleTracking {
+    from { letter-spacing: 0.14em; }
+}
+
+/* —— 07 图片显影：图片真正解码完成才触发（js/utils.js 打 developed 类），
+      避免动画在空白期就播完，加载快慢都能看见 —— */
+.art-frame-wrapper img.developed { animation: imageDevelop 1.15s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes imageDevelop {
+    from { opacity: 0; filter: blur(9px) saturate(0.82); transform: scale(1.012); }
+    to   { opacity: 1; filter: blur(0) saturate(1); transform: scale(1); }
+}
+
+/* —— 20 滚动驱动：滚动到哪，内容在哪浮现
+      仅在支持 view() 时间线的浏览器生效（Chrome / Edge 115+），
+      不支持的浏览器完全按原样显示，不会出现内容消失 —— */
+@supports (animation-timeline: view()) {
+    /* 只选可点击条目：草稿条目靠行内 opacity 0.45 表示「未上架」，
+       动画的 opacity 会盖掉行内样式，所以把它们排除在外 */
+    .archive-item[onclick],
+    .chapter-essay p {
+        animation: scrollReveal both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 60%;
+    }
+    @keyframes scrollReveal {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+}
+
+/* —— 24 章节色温过渡：每章背景多一层同色系薄雾，缓慢漂移
+      颜色由 js/gallery.js 用 utils.js 的 shiftHueWash() 从章节基色推出，
+      以后新增主题不用改这里；不支持 @property 的浏览器只是少了 0.9s 过渡 —— */
+@property --chapter-drift {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+}
+
+body {
+    transition: background-color 1.5s cubic-bezier(.4, 0, .3, 1), --chapter-drift 1.5s cubic-bezier(.4, 0, .3, 1);
+}
+
+body.mode-gallery::before {
+    content: '';
+    position: fixed; inset: -8%; z-index: 1; pointer-events: none;
+    background:
+        radial-gradient(ellipse 70% 60% at 16% 12%, var(--chapter-drift), transparent 68%),
+        radial-gradient(ellipse 60% 55% at 86% 88%, var(--chapter-drift), transparent 72%);
+    opacity: 0.6;
+    animation: chapterAirDrift 120s ease-in-out infinite alternate;
+}
+body.dark-chapter::before { opacity: 0.75; }
+
+@keyframes chapterAirDrift {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(1.4%, -1%, 0) scale(1.05); }
+}
+
+/* —— 11 音频可视化：20px 黑胶小唱片 + 9 格真实频谱
+      播放时唱片才转、频谱才动；暂停立刻停帧，不做空转 —— */
+.vinyl-disc {
+    width: 20px; height: 20px; flex: none; border-radius: 50%;
+    background:
+        radial-gradient(circle at 33% 27%, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0) 44%),
+        radial-gradient(circle at 50% 50%, #b9a37a 0 1px, #e6d7b6 1px 4.4px, #211e19 4.6px 5.6px, transparent 5.8px),
+        repeating-radial-gradient(circle at 50% 50%, #1c1915 0 1px, #2a2620 1px 2px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 0 0 0.5px rgba(0, 0, 0, 0.45);
+    animation: vinylSpin 8s linear infinite;
+    animation-play-state: paused;
+}
+.vinyl-disc.playing { animation-play-state: running; }
+
+@keyframes vinylSpin {
+    to { transform: rotate(360deg); }
+}
+
+.audio-viz { width: 34px; height: 14px; display: block; flex: none; }
+
+/* —— 11 深色章节里的留声机：底色贴着章节背景，但亮一档，不做白纸片 —— */
+body.dark-chapter .music-toggle-btn,
+body.dark-chapter .music-next-btn {
+    background: rgba(255, 255, 255, 0.055);
+    border-color: rgba(230, 223, 211, 0.16);
+    color: #cfc7b8;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18);
+}
+body.dark-chapter .music-toggle-btn:hover,
+body.dark-chapter .music-next-btn:hover {
+    background: rgba(255, 255, 255, 0.10);
+    border-color: rgba(230, 223, 211, 0.34);
+}
+body.dark-chapter .vinyl-disc {
+    box-shadow: 0 0 0 0.5px rgba(230, 223, 211, 0.26), 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* —— 22 水墨淡变转场：左右两栏（连同里面的画作）一起缓缓退色
+      退色 0.85s → 换内容 → 1.35s 浮回来；底色由 body 的 background-color
+      过渡完成，所以中间看到的是两种纸色的渐变，不是一次硬切
+      画作不再单独快退：它只跟着这一层一起明暗，和背景节奏完全一致 —— */
+#gal-left-stage, #gal-right-notes {
+    transition: opacity 1.35s cubic-bezier(.4, 0, .3, 1);
+}
+#gal-left-stage.chapter-fading, #gal-right-notes.chapter-fading {
+    opacity: 0;
+    transition: opacity 0.85s cubic-bezier(.45, 0, .55, 1);
+}
+
+/* —— 22 空间切换（首页 ↔ 展厅）：整页先退净，换空间后再从纸色里浮起
+      退色 0.62s → 换空间 → 1.2s 浮回来；底色仍由 body 的
+      background-color 过渡完成，所以颜色是渐变过去的，不是硬切 —— */
+#space-home, #space-gallery {
+    transition: opacity 1.2s cubic-bezier(.4, 0, .3, 1);
+}
+#space-home.space-fading, #space-gallery.space-fading {
+    opacity: 0;
+    transition: opacity 0.62s cubic-bezier(.45, 0, .55, 1);
+}
+#space-home.space-entering, #space-gallery.space-entering {
+    opacity: 0;
+    transition: none;
+}
+
+/* =========================================================
+   —— 23 进场幕布：冷灰噪点 + 暖光 → 轻点进入 → 四滴墨散开
+   资源没就绪前先挡住入口；就绪后显示“轻点进入”，点击后四个圆
+   从各自的随机落点往外长（canvas 逐帧挖洞：圆里透出内容、圆外还是灰纸） ——
+   ========================================================= */
+
+/* 底色与首页同一套“纸 + 光”的思路：冷灰打底，左上暖光、右下暗角、
+   中心一点微亮，不用电视扫描线也能有老影像的味道 */
+.page-transition-curtain {
+    background-color: #cdcac3;
+    background-image:
+        radial-gradient(ellipse 72% 60% at 6% -12%, rgba(255, 226, 178, 0.34), rgba(255, 226, 178, 0) 64%),
+        radial-gradient(ellipse 62% 54% at 100% 106%, rgba(58, 52, 42, 0.2), rgba(58, 52, 42, 0) 72%),
+        radial-gradient(ellipse 54% 46% at 50% 42%, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0) 70%);
+    opacity: 1;
+    transition: none;
+    pointer-events: auto;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* 首屏纸色薄纱：整块幕布从纸色里缓缓浮出来，第一眼不会硬撞上来。
+   只在访问时用一次，之后它自己淡到 0，不参与任何切换 */
+.page-transition-curtain .curtain-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    background-color: var(--paper-base);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 1.1s cubic-bezier(0.4, 0, 0.3, 1);
+}
+.page-transition-curtain .curtain-veil.curtain-veil-out { opacity: 0; }
+
+/* 纸面颗粒：和文内同一张噪点贴图，只是跳得比页面那层快一些 */
+.page-transition-curtain::before {
+    content: '';
+    position: absolute;
+    inset: -80px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+    opacity: 0.3;
+    mix-blend-mode: multiply;
+    animation: curtainNoise 0.8s steps(3) infinite;
+    z-index: 1;
+}
+
+/* 暗角：四周压一点点，中间像有一盏灯在缓慢呼吸 */
+.page-transition-curtain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 82% 72% at 50% 46%, rgba(40, 36, 30, 0) 50%, rgba(40, 36, 30, 0.18) 100%);
+    animation: curtainGlow 9s ease-in-out infinite;
+    z-index: 1;
+}
+
+@keyframes curtainNoise {
+    0% { transform: translate(0, 0); }
+    33% { transform: translate(-14px, 10px); }
+    66% { transform: translate(12px, -8px); }
+    100% { transform: translate(0, 0); }
+}
+@keyframes curtainGlow {
+    0%, 100% { opacity: 0.82; }
+    50% { opacity: 1; }
+}
+
+/* 版式：小字眉 + 细线 + 主文案，居中偏下，白色主文案一眼能看到 */
+.page-transition-curtain .curtain-scene {
+    position: absolute;
+    left: 50%;
+    top: 62%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    text-align: center;
+    white-space: nowrap;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.page-transition-curtain .curtain-scene.curtain-scene-out {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(8px);
+}
+.page-transition-curtain .curtain-eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.18);
+}
+.page-transition-curtain .curtain-text {
+    opacity: 1;
+    transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.page-transition-curtain .curtain-text.curtain-text-out {
+    opacity: 0;
+    transform: translateY(7px);
+}
+.page-transition-curtain .curtain-rule {
+    display: block;
+    width: 38px;
+    height: 1px;
+    margin: 20px auto 18px auto;
+    background: rgba(255, 255, 255, 0.42);
+}
+.page-transition-curtain.curtain-ready .curtain-rule {
+    animation: curtainRulePulse 2.8s ease-in-out infinite;
+}
+@keyframes curtainRulePulse {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 0.72; }
+}
+.page-transition-curtain .curtain-hint {
+    font-family: 'LXGW WenKai TC', 'Noto Serif SC', serif;
+    font-size: 19px;
+    letter-spacing: 6px;
+    line-height: 1;
+    color: #ffffff;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.28), 0 0 2px rgba(0, 0, 0, 0.16);
+}
+
+/* 加载中的三个点：各自的时长、延迟都不同，所以永远踩不到一个节拍上 */
+.page-transition-curtain .curtain-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 9px;
+    position: relative;
+    top: -3px;
+    letter-spacing: 0;
+}
+.page-transition-curtain .curtain-dots i {
+    display: block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    opacity: 0.45;
+    animation: curtainDotHop 1.5s ease-in-out infinite;
+}
+.page-transition-curtain .curtain-dots i:nth-child(1) {
+    animation-duration: 1.15s;
+    animation-delay: -0.15s;
+}
+.page-transition-curtain .curtain-dots i:nth-child(2) {
+    animation-duration: 1.55s;
+    animation-delay: -0.62s;
+}
+.page-transition-curtain .curtain-dots i:nth-child(3) {
+    animation-duration: 1.32s;
+    animation-delay: -0.95s;
+}
+@keyframes curtainDotHop {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+    30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* 散开：三个圆从三个随机落点往外长，每滴速度不同（2.6s / 3.6s / 4.8s 随机落位）。
+   洞由 canvas 直接“挖”（destination-out），不依赖 mask 合成，
+   所以一定是“圆里透出内容、圆外还是灰纸”这个方向。 */
+.page-transition-curtain.curtain-opening {
+    background: none;   /* 灰底与光都交给 canvas，挖空处才能真正透出内容 */
+    pointer-events: none;   /* 一开始散开就放行：不必等整层淡完才能点 */
+}
+.page-transition-curtain .curtain-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+/* 散开时纸纹跟着淡走，否则颗粒会浮在透出来的内容上 */
+.page-transition-curtain.curtain-opening::before,
+.page-transition-curtain.curtain-opening::after {
+    opacity: 0;
+    transition: opacity 1.4s ease 0.2s;
+    animation-play-state: paused;
+}
+.page-transition-curtain.curtain-fading {
+    opacity: 0;
+    transition: opacity 0.8s linear;
+}
+
+.page-transition-curtain.curtain-hidden { display: none; }
+
+@media screen and (max-width: 900px) {
+    .page-transition-curtain .curtain-scene {
+        top: 64%;
+    }
+    .page-transition-curtain .curtain-eyebrow {
+        font-size: 10px;
+        letter-spacing: 3px;
+    }
+    .page-transition-curtain .curtain-rule {
+        margin: 17px auto 15px auto;
+    }
+    .page-transition-curtain .curtain-hint {
+        font-size: 17px;
+        letter-spacing: 4px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-transition-curtain::before,
+    .page-transition-curtain::after,
+    .page-transition-curtain.curtain-ready .curtain-rule,
+    .page-transition-curtain .curtain-dots i { animation: none; }
+}
