@@ -54,6 +54,7 @@ function renderGallerySpace(startCh) {
     setText('gal-top-title', topTitleText);
 
     leftStage.innerHTML = ''; rightNotes.innerHTML = ''; footerDots.innerHTML = '';
+    let footerTrackHTML = '';   // 先攒起来，最后统一包进可横向滑动的轨道里
 
     currentGalleryProject.items.forEach((item, idx) => {
         const indexNum = idx + 1;
@@ -95,8 +96,10 @@ function renderGallerySpace(startCh) {
             </div>
         `;
 
-        footerDots.innerHTML += `<button class="nav-dot-btn" onclick="goToChapter(${indexNum})">${item.navChar}</button>`;
+        footerTrackHTML += `<button class="nav-dot-btn" onclick="goToChapter(${indexNum})">${item.navChar}</button>`;
     });
+
+    footerDots.innerHTML = `<div class="footer-track">${footerTrackHTML}</div>`;
 
     document.body.classList.remove('mode-home');
     document.body.classList.add('mode-gallery');
@@ -256,6 +259,10 @@ function updateGallery(index) {
 
     const dots = document.querySelectorAll('.nav-dot-btn');
     dots.forEach((d, idx) => d.classList.toggle('active', idx + 1 === currentChapter));
+
+    // 章节多时底部导航可横向滑动，让当前章始终自动滚到中间
+    const activeDot = document.querySelector('.nav-dot-btn.active');
+    if (activeDot) activeDot.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
 
     // 每次翻到这一章都重新抽一个照片倾斜角度
     applyGalleryTilt();

@@ -10,10 +10,9 @@ let spaceToken = 0;
 
 function playSpaceDissolve(applyFn) {
     const fromEl = document.querySelector('.space-wrapper.active');
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // 没有正在显示的空间 / 用户要求减少动效：直接切换
-    if (!fromEl || reduceMotion) {
+    // 没有正在显示的空间：直接切换
+    if (!fromEl) {
         applyFn();
         return;
     }

@@ -118,16 +118,28 @@ function switchMusicContext(targetPlaylist) {
     }
 }
 
+/* 手机上歌名只留三个字：顶栏窄，长名字会挡住返回与标题 */
+function shortTrackName(titleText) {
+    const name = titleText || '';
+    if (window.innerWidth > 900 || name.length <= 3) return name;
+    return name.slice(0, 3) + '…';
+}
+
 function updateMusicUI(isPlaying, titleText, isWaitingWake = false) {
     const wave = document.getElementById('globalWave');
     if (!wave) return;
+    const trackName = shortTrackName(titleText);
     if (isPlaying) {
         wave.classList.add('playing');
-        setText('globalTrackName', `正在听：${titleText}`);
+        setText('globalMusicState', '正在听：');
+        setText('globalTrackName', trackName);
         startAudioViz();
     } else {
         wave.classList.remove('playing');
-        setText('globalTrackName', isWaitingWake ? `♪ 轻触开启配乐：${titleText}` : `♪ 已暂停：${titleText}`);
+        // 唤醒提示本身已经够长，手机上不再接歌名，否则又会把顶栏撑满
+        const compactWake = isWaitingWake && window.innerWidth <= 900;
+        setText('globalMusicState', isWaitingWake ? (compactWake ? '♪ 轻触开启配乐' : '♪ 轻触开启配乐：') : '♪ 已暂停：');
+        setText('globalTrackName', compactWake ? '' : trackName);
         stopAudioViz();
     }
 }

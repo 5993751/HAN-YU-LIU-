@@ -143,6 +143,9 @@ function markCurtainReady() {
             if (textBox) textBox.classList.remove('curtain-text-out');
 
             curtainEl.addEventListener('pointerdown', openLoadingCurtain, { once: true });
+            // 个别浏览器不派发 pointerdown，补上触摸与点击，保证一定能进入
+            curtainEl.addEventListener('touchstart', openLoadingCurtain, { once: true, passive: true });
+            curtainEl.addEventListener('click', openLoadingCurtain, { once: true });
             document.addEventListener('keydown', onCurtainKey);
             window.setTimeout(() => {
                 if (!curtainOpened) curtainEl.classList.add('curtain-ready');

@@ -15,8 +15,7 @@ const DISSOLVE_IN_MS = 1350;   // 与 css/effects.css 里 #gal-left-stage 的浮
 function playChapterDissolve(applyFn) {
     const left = document.getElementById('gal-left-stage');
     const right = document.getElementById('gal-right-notes');
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!left || !right || reduceMotion) {
+    if (!left || !right) {
         applyFn();
         return;
     }
