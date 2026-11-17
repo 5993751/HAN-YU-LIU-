@@ -5,13 +5,8 @@ const WORK_2 = {
     id: "work-2",
     isReady: true,
     layoutMode: "cinematic", // ⭐ 专属开关：开启第二篇独有的“宽银幕电影感”张力布局（仅影响第2篇，不影响第1篇）
-    tag: "2026 · 个人随笔与视觉切片",
-    titleMain: "【随笔】长眠与飞翔",
-    titleSub: "2026.10.16",
-    homeIntro: "从冷酷的终点，到白色的中转，再到卸去所有重力后的漫长升腾。",
     enterBtnText: "翻开 →",
-    archiveDate: "",
-    cover: "assets/work-2/01.webp",
+    category: "个人随笔",        // 个人记录分类（分类按钮会自动生成，可自行改名）
 
     bgm: [
         { title: "无关罪人，无关圣徒", src: "assets/work-2/bgm-ch1.mp3" },
@@ -31,7 +26,6 @@ const WORK_2 = {
             theme: "abyss", // 专为第一章定制的深邃暗金压抑氛围
             bgmSrc: "assets/work-2/bgm-ch1.mp3",
             bgmTitle: "无关罪人，无关圣徒",
-            footnote: "",   // 已彻底删除简评
             essay: `
                 <div class="w2-stanza-dramatic">
                     <div class="verse-pair">
@@ -73,7 +67,6 @@ const WORK_2 = {
             theme: "limbo", // 专为第二章定制的純白迷雾车站氛围
             bgmSrc: "assets/work-2/bgm-ch2.mp3",
             bgmTitle: "一场漫长的歇息",
-            footnote: "",   // 已彻底删除简评
             essay: `
                 <div class="w2-prose-limbo">
                     <p class="lead-line">我站在一片白色里。</p>
@@ -107,7 +100,6 @@ const WORK_2 = {
             theme: "sky", // 专为第三章定制的微风天青色氛围
             bgmSrc: "assets/work-2/bgm-ch3.mp3",
             bgmTitle: "飘扬",
-            footnote: "",   // 已彻底删除简评
             essay: `
                 <div class="w2-prose-sky">
                     <p>风很大，灌进我的耳朵，灌进我的衣服。<br>我张开口，大口大口地呼吸。空气是凉的，有草和泥土的味道，很久没有闻到过了。</p>

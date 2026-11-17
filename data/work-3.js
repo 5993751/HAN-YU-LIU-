@@ -6,13 +6,8 @@ const WORK_3 = {
     id: "work-3",
     isReady: true,
     layoutMode: "minimal-scatter", // ⭐ 开启第三篇专属：极简无框 + 记忆碎片散落模式
-    tag: "2026 · 个人随笔与视觉切片",
-    titleMain: "【随笔】将会成为怎样的大人呢？",
-    titleSub: "2026.10.18",                  // 留空：不显示任何副标题，保持极致纯粹
-    homeIntro: "从黑夜里的蜷缩、镜前的陌生、夕阳下的奋进，到最后躺在星空下的轻声呼唤。",
     enterBtnText: "进入 →",
-    archiveDate: "",
-    cover: "assets/work-3/015.webp",
+    category: "个人随笔",        // 个人记录分类（分类按钮会自动生成，可自行改名）
 
     // 全篇共用唯一一首配乐，翻章时自动比对同源，100%无缝续播
     bgm: [
@@ -29,7 +24,6 @@ const WORK_3 = {
             title: "在晚上",
             src: "assets/work-3/015.webp", // 供首页轮播兜底使用
             theme: "w3-night",
-            footnote: "",
             // ⭐ 散落记忆碎片配置：x/y 为偏离中心的百分比，rot 为歪斜角度，scale 为缩放比例
             scatterInterval: 3400, // 每张图停留约 3.4 秒后柔和淡出，下一张浮现
             scatterImages: [
@@ -60,7 +54,6 @@ const WORK_3 = {
             title: "看见了镜子",
             src: "assets/work-3/02.webp",
             theme: "w3-mirror",
-            footnote: "",
             essay: `
                 <div class="w3-monologue w3-ch2">
                     <p>我努力的不去望，我努力的去记住。<br><span class="m-dim">那种感觉。</span></p>
@@ -86,7 +79,6 @@ const WORK_3 = {
             title: "大声的说",
             src: "assets/work-3/03.webp",
             theme: "w3-sunset",
-            footnote: "",
             essay: `
                 <div class="w3-monologue w3-ch3">
                     <p class="m-ardent">我努力牵起你的手。<br>我鼓起勇气的。<br>我试着说：<br><span class="m-quote">“我们一起面对。”</span></p>
@@ -115,7 +107,6 @@ const WORK_3 = {
             title: "在夜晚，在草地，在梦中",
             src: "assets/work-3/049.webp",
             theme: "w3-starry",
-            footnote: "",
             scatterInterval: 2700, // 9张走马灯回忆节奏稍快（2.7秒一帧），最后定格在星空草地
             scatterImages: [
                 { src: "assets/work-3/041.webp", x: "-13%", y: "-9%",  rot: "-2.8deg", scale: 0.82 },

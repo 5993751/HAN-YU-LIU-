@@ -31,4 +31,4 @@ const themes = {
 };
 
 // 深色主题名单：章节翻到这些主题时，自动切换深色文字模式（body.dark-chapter）
-const DARK_THEMES = ['abyss', 'w1-neon', 'w1-crash', 'w3-night', 'w3-starry'];
+const DARK_THEMES = ['abyss', 'w1-crash', 'w3-night', 'w3-starry'];
