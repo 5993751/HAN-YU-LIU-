@@ -4,7 +4,6 @@
    ========================================================= */
 
 let hallPlaylist = [];
-let hallTrackIndex = 0;   // （原样保留，暂未使用）
 let activePlaylist = [];
 let activeTrackIndex = 0;
 let currentPlayingSrc = "";
@@ -14,7 +13,7 @@ function initMasterMusicSystem() {
     WORKS_DATA.projects.forEach(proj => {
         if (proj.bgm && proj.bgm.length > 0) {
             proj.bgm.forEach(track => {
-                hallPlaylist.push({ title: track.title || proj.titleMain, src: track.src });
+                hallPlaylist.push({ title: track.title || getWorkCopy(proj).title, src: track.src });
             });
         }
     });
@@ -38,26 +37,51 @@ function initMasterMusicSystem() {
 
     const wakeUpAudio = () => {
         if (audio.paused && activePlaylist.length > 0) {
-            audio.play().then(() => { updateMusicUI(true, activePlaylist[activeTrackIndex].title); }).catch(() => {});
+            if (typeof primeAudioContext === 'function') primeAudioContext();
+            playAudio(activePlaylist[activeTrackIndex]);
         }
         document.removeEventListener('click', wakeUpAudio);
     };
     document.addEventListener('click', wakeUpAudio, { once: true });
 }
 
-function loadAndPlayTrack(trackObj, isInitial = false) {
+/* 统一的播放动作：成功刷新 UI；被浏览器拦截时按需提示“轻触开启配乐” */
+function playAudio(trackObj, reportBlocked = false) {
     const audio = document.getElementById('masterAudio');
-    const nextBtn = document.getElementById('globalNextBtn');
     if (!audio || !trackObj) return;
 
+    audio.play().then(() => {
+        updateMusicUI(true, trackObj.title);
+    }).catch(() => {
+        if (reportBlocked) updateMusicUI(false, trackObj.title, true);
+    });
+}
+
+/* “下一首”按钮只在歌单多于一首时出现 */
+function syncNextButtonVisibility() {
+    const nextBtn = document.getElementById('globalNextBtn');
     if (nextBtn) nextBtn.style.display = activePlaylist.length > 1 ? 'inline-flex' : 'none';
+}
+
+/* 某首歌在当前歌单里的位置；找不到时保留原位置 */
+function findPlaylistIndex(src, fallback) {
+    const target = normalizeSrc(src);
+    const idx = activePlaylist.findIndex(t => normalizeSrc(t.src) === target);
+    return idx === -1 ? fallback : idx;
+}
+
+function loadAndPlayTrack(trackObj, isInitial = false) {
+    const audio = document.getElementById('masterAudio');
+    if (!audio || !trackObj) return;
+
+    syncNextButtonVisibility();
 
     const targetNorm = normalizeSrc(trackObj.src);
 
     if (currentPlayingSrc === targetNorm && !isInitial) {
         audio.loop = (activePlaylist.length === 1);
         if (audio.paused) {
-            audio.play().then(() => updateMusicUI(true, trackObj.title)).catch(() => {});
+            playAudio(trackObj);
         } else {
             updateMusicUI(true, trackObj.title);
         }
@@ -68,19 +92,14 @@ function loadAndPlayTrack(trackObj, isInitial = false) {
     audio.src = trackObj.src;
     audio.loop = (activePlaylist.length === 1);
 
-    audio.play().then(() => {
-        updateMusicUI(true, trackObj.title);
-    }).catch(() => {
-        updateMusicUI(false, trackObj.title, true);
-    });
+    playAudio(trackObj, true);
 }
 
 function switchMusicContext(targetPlaylist) {
     if (!targetPlaylist || targetPlaylist.length === 0) return;
 
     activePlaylist = targetPlaylist;
-    const nextBtn = document.getElementById('globalNextBtn');
-    if (nextBtn) nextBtn.style.display = activePlaylist.length > 1 ? 'inline-flex' : 'none';
+    syncNextButtonVisibility();
 
     const audio = document.getElementById('masterAudio');
     const matchIdx = activePlaylist.findIndex(t => normalizeSrc(t.src) === currentPlayingSrc);
@@ -89,7 +108,7 @@ function switchMusicContext(targetPlaylist) {
         activeTrackIndex = matchIdx;
         audio.loop = (activePlaylist.length === 1);
         if (audio.paused) {
-            audio.play().then(() => updateMusicUI(true, activePlaylist[activeTrackIndex].title)).catch(() => {});
+            playAudio(activePlaylist[activeTrackIndex]);
         } else {
             updateMusicUI(true, activePlaylist[activeTrackIndex].title);
         }
@@ -105,22 +124,25 @@ function updateMusicUI(isPlaying, titleText, isWaitingWake = false) {
     if (isPlaying) {
         wave.classList.add('playing');
         setText('globalTrackName', `正在听：${titleText}`);
+        startAudioViz();
     } else {
         wave.classList.remove('playing');
         setText('globalTrackName', isWaitingWake ? `♪ 轻触开启配乐：${titleText}` : `♪ 已暂停：${titleText}`);
+        stopAudioViz();
     }
 }
 
 function toggleGlobalMusic() {
     const audio = document.getElementById('masterAudio');
     if (!audio || activePlaylist.length === 0) return;
-    const curTitle = activePlaylist[activeTrackIndex].title;
+    const currentTrack = activePlaylist[activeTrackIndex];
 
     if (audio.paused) {
-        audio.play().then(() => updateMusicUI(true, curTitle)).catch(() => {});
+        if (typeof primeAudioContext === 'function') primeAudioContext();
+        playAudio(currentTrack);
     } else {
         audio.pause();
-        updateMusicUI(false, curTitle);
+        updateMusicUI(false, currentTrack.title);
     }
 }
 

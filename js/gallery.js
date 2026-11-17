@@ -7,6 +7,7 @@
 let currentGalleryProject = null;
 let currentChapter = 1;
 let scatterTimers = []; // 记录多图散落浮现的定时器，翻页时随时清理
+let archiveReturnScroll = null; // 从个人记录进入展厅时记下的列表位置，回来时还原
 
 function clearScatterTimers() {
     scatterTimers.forEach(t => clearTimeout(t));
@@ -18,9 +19,23 @@ function openGallerySpace(workId, startCh = 1) {
     if (!currentGalleryProject) return;
 
     stopAutoSlide();
+    pauseBreezeBackground(); // 背景已看不见，暂停视频省流量
     clearScatterTimers();
     hideFinaleOverlay(); // ⭐ 从谢幕卡"翻开它"进入新作品时，确保卡片已收起
 
+    // 只有从个人记录列表首次进入时才记位置；展厅内换作品、或从首页推荐进入都不覆盖
+    const archiveView = document.getElementById('view-archive');
+    if (!document.body.classList.contains('mode-gallery') && archiveView && archiveView.classList.contains('active')) {
+        archiveReturnScroll = archiveView.scrollTop;
+    } else if (!archiveView || !archiveView.classList.contains('active')) {
+        archiveReturnScroll = null;
+    }
+
+    // 首页先整页退色，淡尽后再把展厅搭起来、浮到前台
+    playSpaceDissolve(() => renderGallerySpace(startCh));
+}
+
+function renderGallerySpace(startCh) {
     const galContainer = document.getElementById('gal-container');
     const leftStage = document.getElementById('gal-left-stage');
     const rightNotes = document.getElementById('gal-right-notes');
@@ -31,10 +46,11 @@ function openGallerySpace(workId, startCh = 1) {
         galContainer.classList.toggle('minimal-scatter-mode', currentGalleryProject.layoutMode === 'minimal-scatter');
     }
 
-    // ⭐ 若无副标题（如第3篇），顶栏只显示主标题，不出现多余圆点
-    const topTitleText = currentGalleryProject.titleSub
-        ? `${currentGalleryProject.titleMain} · ${currentGalleryProject.titleSub}`
-        : currentGalleryProject.titleMain;
+    // ⭐ 日期留空时，顶栏只显示主标题，不出现多余圆点
+    const galCopy = getWorkCopy(currentGalleryProject);
+    const topTitleText = galCopy.date
+        ? `${galCopy.title} · ${galCopy.date}`
+        : galCopy.title;
     setText('gal-top-title', topTitleText);
 
     leftStage.innerHTML = ''; rightNotes.innerHTML = ''; footerDots.innerHTML = '';
@@ -67,8 +83,6 @@ function openGallerySpace(workId, startCh = 1) {
                 </div>`;
         }
 
-        const footnoteHTML = item.footnote ? `<div class="chapter-footnote"><span class="footnote-label">SCENE NOTE · 画面白描</span>${item.footnote}</div>` : '';
-
         rightNotes.innerHTML += `
             <div class="chapter-box" data-index="${indexNum}" data-theme="${item.theme || 'warm'}">
                 <div class="chapter-badge">
@@ -78,7 +92,6 @@ function openGallerySpace(workId, startCh = 1) {
                 </div>
                 <h2 class="chapter-title">${item.title}</h2>
                 <div class="chapter-essay">${item.essay}</div>
-                ${footnoteHTML}
             </div>
         `;
 
@@ -98,23 +111,51 @@ function openGallerySpace(workId, startCh = 1) {
 
 function closeGalleryToHome() {
     clearScatterTimers();
+    cancelChapterDissolve();
     hideFinaleOverlay(); // ⭐ Esc / 返回按钮 / 谢幕卡"回到大厅"时，同步收起谢幕卡
+
+    // 展厅先整页退色，淡尽后再切回大厅
+    playSpaceDissolve(restoreHomeSpace);
+}
+
+function restoreHomeSpace() {
     const galContainer = document.getElementById('gal-container');
     if (galContainer) galContainer.classList.remove('cinematic-mode', 'minimal-scatter-mode');
 
     document.body.classList.remove('mode-gallery', 'dark-chapter');
     document.body.classList.add('mode-home');
+    // 章节主题只属于展厅：清掉，否则首页画框会继承上一章的专属底色与边框
+    document.body.removeAttribute('data-active-theme');
     document.body.style.backgroundColor = 'var(--paper-base)';
+    document.body.style.removeProperty('--chapter-drift');
+    refreshAudioVizIdle();
 
     document.getElementById('space-gallery').classList.remove('active');
     document.getElementById('space-home').classList.add('active');
 
     if (hallPlaylist.length > 0) {
         activePlaylist = hallPlaylist;
-        const nextBtn = document.getElementById('globalNextBtn');
-        if (nextBtn) nextBtn.style.display = activePlaylist.length > 1 ? 'inline-flex' : 'none';
+        // 回到大厅后，"下一首"从当前正在播的那首继续往后走
+        activeTrackIndex = findPlaylistIndex(currentPlayingSrc, activeTrackIndex);
+        syncNextButtonVisibility();
     }
+
+    // 返回大厅：背景动图与「近期作品」推荐都重新随机抽一个
+    resumeBreezeBackground();
+    switchToRandomBreezeBackground();
+    refreshHomeFeatured();
+
     startAutoSlide();
+
+    // 从个人记录进来的，回到离开时的列表位置（display 切换会把 scrollTop 清零）
+    if (archiveReturnScroll !== null) {
+        const archiveView = document.getElementById('view-archive');
+        const targetTop = archiveReturnScroll;
+        archiveReturnScroll = null;
+        requestAnimationFrame(() => {
+            if (archiveView) archiveView.scrollTop = targetTop;
+        });
+    }
 }
 
 /* ⭐ 核心引擎：启动当前章节的"多图零散浮现"序列（上一张淡淡隐去，下一张在另一处柔和浮现，直至最后一张定格） */
@@ -186,10 +227,15 @@ function updateGallery(index) {
         }
     });
 
-    document.body.style.backgroundColor = themes[activeTheme] || '#f2ede2';
+    const baseColor = themes[activeTheme] || '#f2ede2';
     const isDarkTheme = DARK_THEMES.includes(activeTheme);
+    document.body.style.backgroundColor = baseColor;
+    // 同色系漂移色：浅色章往暖侧偏、深色章往冷侧偏，只做一层极淡的空气
+    document.body.style.setProperty('--chapter-drift',
+        shiftHueWash(baseColor, isDarkTheme ? 12 : -10, isDarkTheme ? 6 : -4, isDarkTheme ? 0.22 : 0.42));
     document.body.classList.toggle('dark-chapter', isDarkTheme);
     document.body.setAttribute('data-active-theme', activeTheme);
+    refreshAudioVizIdle();
 
     const rightNotes = document.getElementById('gal-right-notes');
     if (rightNotes) rightNotes.scrollTop = 0;
@@ -202,12 +248,17 @@ function updateGallery(index) {
     if (currentItem && currentItem.bgmSrc) {
         const itemTrack = { title: currentItem.bgmTitle || currentItem.title, src: currentItem.bgmSrc };
         if (normalizeSrc(itemTrack.src) !== currentPlayingSrc) {
+            // 先让"下一首"的起点对准当前曲目，再切歌；否则会从歌单旧位置往后走
+            activeTrackIndex = findPlaylistIndex(itemTrack.src, activeTrackIndex);
             loadAndPlayTrack(itemTrack);
         }
     }
 
     const dots = document.querySelectorAll('.nav-dot-btn');
     dots.forEach((d, idx) => d.classList.toggle('active', idx + 1 === currentChapter));
+
+    // 每次翻到这一章都重新抽一个照片倾斜角度
+    applyGalleryTilt();
 }
 
 function changeChapter(dir) {
@@ -221,11 +272,14 @@ function changeChapter(dir) {
         showFinaleOverlay();
         return;
     }
-    updateGallery(currentChapter + dir);
+    // 目标章节先算好再交给淡变转场，避免化开期间重复触发时算错
+    const targetChapter = currentChapter + dir;
+    playChapterDissolve(() => updateGallery(targetChapter));
 }
 
 function goToChapter(index) {
-    updateGallery(index);
+    if (index === currentChapter) return;
+    playChapterDissolve(() => updateGallery(index));
 }
 
 /* =========================================================
@@ -239,7 +293,7 @@ let finaleNextWork = null; // 本次谢幕卡抽中的推荐作品
 function pickRandomNextWork() {
     if (!currentGalleryProject) return null;
     const pool = WORKS_DATA.projects.filter(p =>
-        p.id !== currentGalleryProject.id && p.isReady !== false // 没写 isReady 字段的作品默认视为已上架
+        p.id !== currentGalleryProject.id && isProjectReady(p) // 草稿（isReady: false）不参与推荐
     );
     if (pool.length === 0) return null;
     return pool[Math.floor(Math.random() * pool.length)];
@@ -257,11 +311,12 @@ function showFinaleOverlay() {
     finaleNextWork = pickRandomNextWork();
 
     // 推荐位：抽得到其他作品才显示，否则整块隐藏
-    const recSection = document.getElementById('finale-Rec');
+    const recSection = document.getElementById('finale-rec');
     if (finaleNextWork) {
         if (recSection) recSection.style.display = '';
-                setText('finale-next-title', finaleNextWork.titleMain);
-        setText('finale-next-date', finaleNextWork.titleSub || '');
+        const nextCopy = getWorkCopy(finaleNextWork);
+        setText('finale-next-title', nextCopy.title);
+        setText('finale-next-date', nextCopy.date);
     } else {
         if (recSection) recSection.style.display = 'none';
     }

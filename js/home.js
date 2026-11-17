@@ -1,7 +1,7 @@
 /* =========================================================
    首页大厅逻辑 (js/home.js)
    近期作品轮播 / 进度卡 / 文字导航点 / 标签页切换
-   ⭐ 2026-10：轮播图片改为懒加载（浏览到才下载）
+   轮播图片按需加载：翻到哪张才下载哪张
    ========================================================= */
 
 let currentSlide = 1;
@@ -21,79 +21,112 @@ function initHomePage() {
     setText('btn-archive', SITE_SETTINGS.navArchiveText);
     setText('ui-mood-date', SITE_SETTINGS.moodDate);
     setText('ui-mood-text', SITE_SETTINGS.moodText);
-    setText('ui-archive-title', SITE_SETTINGS.archivePageTitle);
     setText('ui-archive-desc', SITE_SETTINGS.archivePageDesc);
 
     slideDuration = SITE_SETTINGS.homeSlideInterval || 5500;
-    activeFeaturedProject = WORKS_DATA.projects.find(p => p.id === WORKS_DATA.featuredWorkId) || WORKS_DATA.projects[0];
-    if (!activeFeaturedProject) return;
 
-    setText('feat-tag', activeFeaturedProject.tag);
-    setText('feat-title-main', activeFeaturedProject.titleMain);
-    setText('feat-title-sub', activeFeaturedProject.titleSub);
-    setText('feat-desc', activeFeaturedProject.homeIntro);
-    setText('feat-enter-btn', activeFeaturedProject.enterBtnText || '翻开这组作品 →');
+    // 首屏推荐也随机抽一部（不再固定为某一部）
+    const readyPool = WORKS_DATA.projects.filter(isProjectReady);
+    const firstProject = readyPool.length > 0
+        ? readyPool[Math.floor(Math.random() * readyPool.length)]
+        : WORKS_DATA.projects[0];
+    renderFeaturedProject(firstProject);
 
+    // 个人记录的渲染、分类、搜索与排序统一交给 js/archive.js
+    initArchive();
+
+    initMasterMusicSystem();
+    startAutoSlide();
+
+    const stage = document.getElementById('feat-stage');
+    if (stage) {
+        stage.addEventListener('mouseenter', stopAutoSlide);
+        stage.addEventListener('mouseleave', startAutoSlide);
+    }
+}
+
+/* 把某部作品铺到首页左侧与轮播台上（首次进入、返回首页换推荐共用） */
+function renderFeaturedProject(project) {
+    if (!project) return;
     const stage = document.getElementById('feat-stage');
     const dotsBox = document.getElementById('feat-dots');
     if (!stage || !dotsBox) return;
 
-    totalSlides = activeFeaturedProject.items.length;
+    stopAutoSlide();
+
+    activeFeaturedProject = project;
+    currentSlide = 1;
+    totalSlides = project.items.length;
+
+    const copy = getWorkCopy(project);
+    setText('feat-title-main', copy.title);
+    setText('feat-title-sub', copy.date);
+    setText('feat-desc', copy.intro);
+    setText('feat-enter-btn', project.enterBtnText || '翻开这组作品 →');
+
     stage.innerHTML = '';
     dotsBox.innerHTML = '';
 
-    activeFeaturedProject.items.forEach((item, idx) => {
+    project.items.forEach((item, idx) => {
         const isFirst = idx === 0 ? 'active' : '';
-        // ⭐ 改动 1：网址存进 data-src（不下载），翻到时才由 lazyLoadSlideImages 装载
+        // 网址先存进 data-src 不下载，翻到时才由 lazyLoadSlideImages 装载
         const innerHTML = item.type === 'text'
             ? `<div class="text-only-card"><h3>${item.title}</h3><p>${item.essay}</p></div>`
             : `<div class="art-frame-wrapper"><img data-src="${item.src}" alt="${item.title}"></div>`;
 
         stage.innerHTML += `<div class="showcase-slide ${isFirst}" data-index="${idx + 1}">${innerHTML}</div>`;
-        dotsBox.innerHTML += `<span class="s-dot ${isFirst}" onclick="goSlide(${idx + 1})">${item.navChar}</span>`;
+        dotsBox.innerHTML += `<span class="s-dot ${isFirst}" onclick="event.stopPropagation(); goSlide(${idx + 1})">${item.navChar}</span>`;
     });
 
-    // ⭐ 改动 2：首屏只装载第 1、2 张（第 1 张正在展示，第 2 张预载备翻页）
+    // 首屏只装载第 1、2 张（第 1 张正在展示，第 2 张预载备翻页）
     lazyLoadSlideImages(stage, 1);
-
-    const archiveContainer = document.getElementById('archive-grid-container');
-    if (archiveContainer) {
-        archiveContainer.innerHTML = '';
-        WORKS_DATA.projects.forEach(proj => {
-            const clickAttr = proj.isReady ? `onclick="openGallerySpace('${proj.id}', 1)"` : '';
-            // 如果作品还没准备好（isReady: false），就让它的透明度降低，不能点击
-            const opacityStyle = proj.isReady ? '' : 'style="opacity: 0.45; cursor: default;"';
-
-            // ⭐ 纯净文档列表结构：左边标题+副标题，右边日期，彻底抛弃封面图
-            archiveContainer.innerHTML += `
-                <div class="archive-list-item" ${clickAttr} ${opacityStyle}>
-                    <div class="ali-left">
-                        <h3 class="ali-title">${proj.titleMain} <span class="ali-sub">${proj.titleSub ? ' / ' + proj.titleSub : ''}</span></h3>
-                    </div>
-                    <div class="ali-right">
-                        <span class="ali-date">${proj.archiveDate}</span>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    initMasterMusicSystem();
+    bindHomeSlideTilt(stage, project);
     updateLiveCard(1);
-    startAutoSlide();
+}
 
-    stage.addEventListener('mouseenter', stopAutoSlide);
-    stage.addEventListener('mouseleave', startAutoSlide);
+/* 首页推荐照片：和展厅一样给一个随性的倾斜角，左右箭头与舞台保持端正 */
+function bindHomeSlideTilt(stageEl, project) {
+    stageEl.querySelectorAll('.showcase-slide img').forEach(img => {
+        const applyTilt = () => {
+            const frame = img.closest('.art-frame-wrapper');
+            if (!frame) return;
+            const angle = pickGalleryTilt(img, project);
+            frame.style.setProperty('--tilt', angle ? angle.toFixed(2) + 'deg' : '0deg');
+        };
+
+        // 图片懒加载，加载完成才知道真实宽高，才能按比例决定倾斜幅度
+        if (img.complete && img.naturalWidth) {
+            applyTilt();
+        } else {
+            img.addEventListener('load', applyTilt, { once: true });
+        }
+    });
+}
+
+/* 从展厅返回首页时，随机换一部推荐（避开刚看完的、也避开当前已显示的） */
+function refreshHomeFeatured() {
+    if (typeof WORKS_DATA === 'undefined' || WORKS_DATA.projects.length === 0) return;
+
+    const pool = WORKS_DATA.projects.filter(isProjectReady);
+    if (pool.length === 0) return;
+
+    const viewedId = currentGalleryProject ? currentGalleryProject.id : null;
+    const shownId = activeFeaturedProject ? activeFeaturedProject.id : null;
+
+    // 优先换一部既不是刚看完、也不是当前正显示的作品，保证推荐真的变了
+    let candidates = pool.filter(p => p.id !== viewedId && p.id !== shownId);
+    if (candidates.length === 0) candidates = pool.filter(p => p.id !== viewedId);
+    if (candidates.length === 0) candidates = pool;
+
+    renderFeaturedProject(candidates[Math.floor(Math.random() * candidates.length)]);
 }
 
 function updateLiveCard(index) {
     if (!activeFeaturedProject) return;
-    const item = activeFeaturedProject.items[index - 1];
-    if (!item) return;
+    if (!activeFeaturedProject.items[index - 1]) return;
 
     const numStr = String(index).padStart(2, '0') + ' / ' + String(totalSlides).padStart(2, '0');
     setText('live-num', numStr);
-    setText('live-char', `${item.navChar} · ${item.title}`);
 
     const bar = document.getElementById('slide-progress');
     if (bar) {
@@ -118,7 +151,7 @@ function showSlide(index) {
     slides.forEach(s => s.classList.toggle('active', parseInt(s.dataset.index) === currentSlide));
     dots.forEach((d, idx) => d.classList.toggle('active', idx + 1 === currentSlide));
 
-    // ⭐ 改动 3：翻到哪张，才装载哪张和相邻两张
+    // 翻到哪张，才装载哪张和相邻两张
     lazyLoadSlideImages(document.getElementById('feat-stage'), currentSlide);
 
     updateLiveCard(currentSlide);
@@ -170,14 +203,12 @@ function switchTab(tabName) {
     if (!featuredView || !archiveView) return;
 
     if (tabName === 'featured') {
-        document.body.classList.remove('mode-archive');
         featuredView.classList.add('active');
         archiveView.classList.remove('active');
         btnFeatured.classList.add('active');
         btnArchive.classList.remove('active');
         startAutoSlide();
     } else {
-        document.body.classList.add('mode-archive');
         archiveView.classList.add('active');
         featuredView.classList.remove('active');
         btnArchive.classList.add('active');
