@@ -42,6 +42,7 @@
 .chapter-title { font-family: 'Noto Serif SC', serif; font-size: 29px; font-weight: 400; line-height: 1.4; margin-bottom: 26px; letter-spacing: 2.5px; color: var(--ink-main); }
 .chapter-essay { font-family: 'LXGW WenKai TC', 'Noto Serif SC', serif; font-size: 16.5px; line-height: 2.2; letter-spacing: 1.2px; color: var(--ink-main); margin-bottom: 36px; }
 .gallery-footer { position: fixed; bottom: 20px; left: 0; width: 100%; display: flex; justify-content: center; align-items: center; gap: 26px; z-index: 20; }
+.footer-track { display: flex; align-items: center; gap: 26px; }
 .nav-dot-btn { background: none; border: none; font-family: 'LXGW WenKai TC', 'Noto Serif SC', serif; font-size: 15.5px; color: var(--ink-muted); cursor: pointer; transition: all 0.3s ease; padding: 6px; position: relative; }
 .nav-dot-btn:hover { color: var(--ink-main); }
 .nav-dot-btn.active { color: var(--ink-main); font-weight: 600; transform: translateY(-2px); }
@@ -112,8 +113,8 @@ body[data-active-theme="w1-crash"] .chapter-essay { color: #d6dadf; }
     /* 页顶纸带在手机上收紧边距与高度，与内容区同一条 24px 边线 */
     .site-header { min-height: 104px; padding: 16px 24px; }
     /* 导航在手机上回落一档，避免与标题挤在同一行溢出 */
-    .site-nav { gap: 22px; margin-right: 0; }
-    .nav-btn { font-size: 15px; letter-spacing: 1.5px; }
+    .site-nav { gap: 22px; margin-right: 0; flex-shrink: 0; }
+    .nav-btn { font-size: 15px; letter-spacing: 1.5px; white-space: nowrap; }
     .featured-split-layout { flex-direction: column; height: auto; min-height: 0; gap: 34px; }
     .featured-card-wrap { display: block; flex: none; width: 100%; transform: none; }
     /* 纸卡：保留轻微倾斜与落影，手机上仍是一张“纸”；摆动关闭，滚动时不晃 */
@@ -132,7 +133,7 @@ body[data-active-theme="w1-crash"] .chapter-essay { color: #d6dadf; }
     .hero-action { margin-top: 18px; }
 
     /* 便签留在纸外，从纸卡下缘露出一角：仍是斜着贴上去的独立小纸条 */
-    .mood-note { position: static; width: 76%; margin: -16px 2px 0 auto; padding: 12px 12px 11px; transform: rotate(-1.6deg); animation: none; }
+    .mood-note { position: static; width: 76%; margin: 12px 2px 0 auto; padding: 12px 12px 11px; transform: rotate(-1.6deg); animation: none; }
     .mood-date { font-size: 9px; letter-spacing: 1.6px; }
     .mood-content { font-size: 11.5px; line-height: 1.75; }
 
@@ -160,8 +161,21 @@ body[data-active-theme="w1-crash"] .chapter-essay { color: #d6dadf; }
     .page-nav-arrow { top: auto; bottom: 80px; width: 36px; height: 36px; font-size: 16px; }
     .arrow-left { left: 20px; }
     .arrow-right { right: 20px; }
-    .gallery-footer { bottom: 15px; gap: 15px; }
-    .nav-dot-btn { font-size: 14px; padding: 4px; }
+    .gallery-footer {
+        bottom: 15px; gap: 0; padding: 0 18px;
+        justify-content: flex-start;          /* 章节多时让轨道可以横向滑动 */
+        overflow-x: auto; overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .gallery-footer::-webkit-scrollbar { display: none; }
+    .footer-track { flex: 0 0 auto; margin: 0 auto; gap: 4px; }   /* 装得下时自动居中，装不下时从左侧开始滑 */
+    .nav-dot-btn { flex: 0 0 auto; font-size: 14px; padding: 4px; }
+
+    /* 手机屏幕小，章节环境光与纸面漏光按比例提亮，否则几乎看不出来 */
+    body.mode-gallery::before { opacity: 0.9; }
+    body.dark-chapter::before { opacity: 0.95; }
+    body.mode-gallery .paper-light-leak { opacity: 0.45; }
 }
 /* =========================================================
    12. 手机端深度适配（细碎元素在小屏上的排布）
@@ -340,6 +354,8 @@ body[data-active-theme="w1-crash"] .chapter-essay { color: #d6dadf; }
     .site-subtitle { font-size: 8px; letter-spacing: 2px; margin-top: 3px; }
     .site-nav { gap: 16px; }
     .nav-btn { font-size: 13px; letter-spacing: 1.2px; }
+    /* 横屏不显示“正在听/已暂停”这类前缀，直接留歌名，把顶栏让出来 */
+    .music-state { display: none; }
     .view-section { padding: 4px 22px 14px; }
 
     /* —— 12.8.1 首页：恢复左右分栏 —— */
@@ -429,7 +445,7 @@ body[data-active-theme="w1-crash"] .chapter-essay { color: #d6dadf; }
 
 /* —— 竖屏才出现的那句“横屏浏览”提示 —— */
 @media screen and (max-width: 900px) and (orientation: portrait) {
-    .rotate-hint { display: block; }
+    .rotate-hint { display: block; font-size: 12px; letter-spacing: 1.4px; color: var(--ink-secondary); }
 }
 /* =========================================================
    13. 第三篇《将会成为怎样的大人呢？》专属极简意识流与散落图片系统
