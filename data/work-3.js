@@ -1,31 +1,36 @@
-/* =========================================================
-   独立档案小册子：作品 3《将会成为怎样的大人呢？》
-   极简意识流独白 + 记忆碎片零散浮现引擎 + 全篇单曲循环
-   ========================================================= */
-const WORK_3 = {
+/* 作品 3《将会成为怎样的大人呢？》数据与专属底色配置 */
+
+registerWork({
     id: "work-3",
     isReady: true,
-    layoutMode: "minimal-scatter", // ⭐ 开启第三篇专属：极简无框 + 记忆碎片散落模式
+    layoutMode: "minimal-scatter",
     enterBtnText: "进入 →",
-    category: "个人随笔",        // 个人记录分类（分类按钮会自动生成，可自行改名）
+    category: "个人随笔",
+    title: "将会成为怎样的大人呢？",
+    date: "2026.10.18",
+    intro: "从黑夜里的蜷缩、镜前的陌生、夕阳下的奋进，到最后躺在星空下的轻声呼唤。",
 
-    // 全篇共用唯一一首配乐，翻章时自动比对同源，100%无缝续播
     bgm: [
         { title: "将会成为怎样的大人呢？", src: "assets/work-3/bgm-1.mp3" }
     ],
 
+    themes: {
+        'w3-night':  { color: '#161b26', dark: true },
+        'w3-mirror': { color: '#eef0f3', dark: false },
+        'w3-sunset': { color: '#f2e4d5', dark: false },
+        'w3-starry': { color: '#11151e', dark: true }
+    },
+
     items: [
-        // ================= 壹：童年黑夜（5张图零散交替浮现，最后一张定格） =================
         {
             id: 1,
             type: "image",
             navChar: "壹",
             badgeNum: "",
             title: "在晚上",
-            src: "assets/work-3/015.webp", // 供首页轮播兜底使用
+            src: "assets/work-3/015.webp",
             theme: "w3-night",
-            // ⭐ 散落记忆碎片配置：x/y 为偏离中心的百分比，rot 为歪斜角度，scale 为缩放比例
-            scatterInterval: 3400, // 每张图停留约 3.4 秒后柔和淡出，下一张浮现
+            scatterInterval: 3400,
             scatterImages: [
                 { src: "assets/work-3/011.webp", x: "-12%", y: "-10%", rot: "-3.2deg", scale: 0.84 },
                 { src: "assets/work-3/012.webp", x: "11%",  y: "9%",   rot: "2.4deg",  scale: 0.85 },
@@ -44,8 +49,6 @@ const WORK_3 = {
                 </div>
             `
         },
-
-        // ================= 贰：青春对镜（单张竖版素描，阶梯顿挫排版） =================
         {
             id: 2,
             type: "image",
@@ -69,8 +72,6 @@ const WORK_3 = {
                 </div>
             `
         },
-
-        // ================= 叁：夕阳燃烬（单张超宽幅夕阳，由盛转衰下沉排版） =================
         {
             id: 3,
             type: "image",
@@ -97,8 +98,6 @@ const WORK_3 = {
                 </div>
             `
         },
-
-        // ================= 肆：星空走马灯（9张童年记忆散落闪回，终局星空定格） =================
         {
             id: 4,
             type: "image",
@@ -107,7 +106,7 @@ const WORK_3 = {
             title: "在夜晚，在草地，在梦中",
             src: "assets/work-3/049.webp",
             theme: "w3-starry",
-            scatterInterval: 2700, // 9张走马灯回忆节奏稍快（2.7秒一帧），最后定格在星空草地
+            scatterInterval: 2700,
             scatterImages: [
                 { src: "assets/work-3/041.webp", x: "-13%", y: "-9%",  rot: "-2.8deg", scale: 0.82 },
                 { src: "assets/work-3/042.webp", x: "12%",  y: "-7%",  rot: "2.2deg",  scale: 0.82 },
@@ -130,4 +129,4 @@ const WORK_3 = {
             `
         }
     ]
-};
+});

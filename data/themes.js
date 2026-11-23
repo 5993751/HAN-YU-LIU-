@@ -1,34 +1,11 @@
-/* =========================================================
-   【私人总控中心 3：章节主题色彩表】 (data/themes.js)
-   💡 以后新章节要新的底色，只需在 themes 里加一行；
-      新章节是深色氛围，就把 theme 名加进 DARK_THEMES。
-      完全不需要再碰 js/ 下的任何逻辑文件！
-   ========================================================= */
+/* 公共章节底色配置（各展厅专属底色写在各自的 data/work-N.js 内） */
 
-const themes = {
-    'warm': '#f2ede2',
-    'cool': '#e6e3da',
-    'silent': '#eceae3',
-    'remake': '#f0ece1',
-    'abyss': '#1c1915',
-    'limbo': '#f7f8f6',
-    'sky': '#eef2ee',
-    // ⭐ 第一篇《泡沫与微光》9个章节的专属氛围背景色
-    'w1-showa': '#ece4d5',   // 01 涌：昭和老照片低饱和暖褐纸色
-    'w1-morandi': '#f2eae4', // 02 升：80年代百货莫兰迪暖粉米色
-    'w1-gilded': '#f5ebd6',  // 03 繁：流金全盛期暖琥珀浅金
-    'w1-golden-glow': '#f7f1e3',    // 04 光：金
-    'w1-mirage': '#e4e7e6',  // 05 悬：高处幻象微冷青灰
-    'w1-crash': '#1f2124',   // 06 裂：崩盘瞬间纪实冷峻铁灰（深色模式）
-    'w1-ruins': '#ebecee',   // 07 寂：空城废墟清冷雾白
-    'w1-gather': '#eaede6',  // 08 拾：写生浅苔绿温润纸色
-    'w1-dawn': '#f4efe4',     // 09 留：平淡余温柔和晨光米色
-    // ⭐ 第三篇《将会成为怎样的大人呢？》4个章节专属氛围底色
-    'w3-night': '#161b26',   // 壹：童年河堤静谧夜空蓝（深色模式）
-    'w3-mirror': '#eef0f3',  // 贰：青春镜前迷雾素描白
-    'w3-sunset': '#f2e4d5',  // 叁：夕阳炽热余晖暖暮色
-    'w3-starry': '#11151e'   // 肆：终局草地浩瀚星空黑蓝（深色模式）
+const CHAPTER_THEMES = {
+    'warm':   { color: '#f2ede2', dark: false },
+    'cool':   { color: '#e6e3da', dark: false },
+    'silent': { color: '#eceae3', dark: false },
+    'remake': { color: '#f0ece1', dark: false },
+    'abyss':  { color: '#1c1915', dark: true },
+    'limbo':  { color: '#f7f8f6', dark: false },
+    'sky':    { color: '#eef2ee', dark: false }
 };
-
-// 深色主题名单：章节翻到这些主题时，自动切换深色文字模式（body.dark-chapter）
-const DARK_THEMES = ['abyss', 'w1-crash', 'w3-night', 'w3-starry'];

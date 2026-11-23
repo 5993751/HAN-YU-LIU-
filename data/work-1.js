@@ -1,35 +1,35 @@
-/* =========================================================
-   独立档案小册子：作品 1《泡沫与微光》（九章精简版）
-   ---------------------------------------------------------
-   每章只保留三样东西：
-     title  → 题目
-     essay  → 副标题（era-stamp 那一行）+ 正文
-     theme  → 这一章的整页色调，保持原样即可
+/* 作品 1《泡沫与微光》数据与专属底色配置 */
 
-   正文排版由三个 class 组成（样式在 css/gallery.css 末尾「16. 展厅一正文排版」）：
-     verse-scene → 画面白描，字小、颜色淡、左侧一条细线
-     verse-body  → 正文，正常字重
-     verse-turn  → 收束句，衬线字体、字距更开、上方一小段短线
-   <br> 是手工换行；想合并成一行，删掉 <br> 即可
-   ========================================================= */
-const WORK_1 = {
+registerWork({
     id: "work-1",
     isReady: true,
     enterBtnText: "翻开 →",
-    category: "视觉作品",        // 个人记录分类（分类按钮会自动生成，可自行改名）
+    category: "视觉作品",
+    title: "泡沫与微光",
+    date: "2026.9.30",
+    intro: "有时候会好奇，当一个热闹的时代像泡泡一样升起又破掉之后，留在普通人生活里的到底是什么？",
 
-    // 展厅配乐
     bgm: [
         { title: "泡沫与微光", src: "assets/work-1/bgm-1.mp3" }
     ],
 
-    // 9 张图 + 9 种页面色调
+    themes: {
+        'w1-showa':       { color: '#ece4d5', dark: false },
+        'w1-morandi':     { color: '#f2eae4', dark: false },
+        'w1-gilded':      { color: '#f5ebd6', dark: false },
+        'w1-golden-glow': { color: '#f7f1e3', dark: false },
+        'w1-mirage':      { color: '#e4e7e6', dark: false },
+        'w1-crash':       { color: '#1f2124', dark: true },
+        'w1-ruins':       { color: '#ebecee', dark: false },
+        'w1-gather':      { color: '#eaede6', dark: false },
+        'w1-dawn':        { color: '#f4efe4', dark: false }
+    },
+
     items: [
-        // ================= 第一阶段：泡沫酝酿期 =================
         {
             id: 1, type: "image", navChar: "涌", badgeNum: "PHASE I · 01",
             title: "地面裂开了", src: "assets/work-1/01.webp",
-            theme: "w1-showa", // 1. 昭和老照片低饱和暖褐调
+            theme: "w1-showa",
             essay: `
                 <div class="w1-verse">
                     <span class="era-stamp">STAGE 01 · 酝酿与初涌</span>
@@ -41,7 +41,7 @@ const WORK_1 = {
         {
             id: 2, type: "image", navChar: "升", badgeNum: "PHASE I · 02",
             title: "太阳出来了，泡泡攒成了团", src: "assets/work-1/02.webp",
-            theme: "w1-morandi", // 2. 80年代百货莫兰迪柔和暖粉米色
+            theme: "w1-morandi",
             essay: `
                 <div class="w1-verse">
                     <span class="era-stamp">STAGE 01 · 萌芽与升温</span>
@@ -50,12 +50,10 @@ const WORK_1 = {
                 </div>
             `
         },
-
-        // ================= 第二阶段：泡沫鼎盛期 =================
         {
             id: 3, type: "image", navChar: "繁", badgeNum: "PHASE II · 03",
             title: "一切繁华如绫罗绸缎", src: "assets/work-1/03.webp",
-            theme: "w1-gilded", // 3. 流金盛景暖琥珀光影调
+            theme: "w1-gilded",
             essay: `
                 <div class="w1-verse">
                     <span class="era-stamp gold">STAGE 02 · 全盛与狂欢</span>
@@ -67,7 +65,7 @@ const WORK_1 = {
         {
             id: 4, type: "image", navChar: "光", badgeNum: "PHASE II · 04",
             title: "这是最好的时代", src: "assets/work-1/04.webp",
-            theme: "w1-golden-glow", // 4. 流金盛景暖琥珀光影调
+            theme: "w1-golden-glow",
             essay: `
                 <div class="w1-verse">
                     <span class="era-stamp gold-light">STAGE 02 · 黄金与微光</span>
@@ -79,7 +77,7 @@ const WORK_1 = {
         {
             id: 5, type: "image", navChar: "悬", badgeNum: "PHASE II · 05",
             title: "裂痕爬出来了", src: "assets/work-1/05.webp",
-            theme: "w1-mirage", // 5. 幻象危影错位青灰调
+            theme: "w1-mirage",
             essay: `
                 <div class="w1-verse">
                     <span class="era-stamp">STAGE 02 · 顶峰与危影</span>
@@ -88,12 +86,10 @@ const WORK_1 = {
                 </div>
             `
         },
-
-        // ================= 第三阶段：泡沫破裂与余温 =================
         {
             id: 6, type: "image", navChar: "裂", badgeNum: "PHASE III · 06",
             title: "一场大爆炸", src: "assets/work-1/06.webp",
-            theme: "w1-crash", // 6. 崩盘瞬间纪实冷峻铁灰调（深色压抑模式）
+            theme: "w1-crash",
             essay: `
                 <div class="w1-verse">
                     <span class="era-stamp crash">STAGE 03 · 崩盘与跌落</span>
@@ -106,7 +102,7 @@ const WORK_1 = {
         {
             id: 7, type: "image", navChar: "寂", badgeNum: "PHASE III · 07",
             title: "匆匆的脚步", src: "assets/work-1/07.webp",
-            theme: "w1-ruins", // 7. 空城废墟清冷雾白调
+            theme: "w1-ruins",
             essay: `
                 <div class="w1-verse">
                     <span class="era-stamp">STAGE 03 · 空寂与消解</span>
@@ -118,7 +114,7 @@ const WORK_1 = {
         {
             id: 8, type: "image", navChar: "拾", badgeNum: "PHASE III · 08",
             title: "回望的脚步", src: "assets/work-1/08.webp",
-            theme: "w1-gather", // 8. 碎片重寻写生浅苔绿纸调
+            theme: "w1-gather",
             essay: `
                 <div class="w1-verse">
                     <span class="era-stamp">STAGE 03 · 打捞与重寻</span>
@@ -130,7 +126,7 @@ const WORK_1 = {
         {
             id: 9, type: "image", navChar: "留", badgeNum: "PHASE III · 09",
             title: "被遗忘的年代", src: "assets/work-1/09.webp",
-            theme: "w1-dawn", // 9. 平淡余温柔和晨光暖米色
+            theme: "w1-dawn",
             essay: `
                 <div class="w1-verse">
                     <span class="era-stamp">STAGE 03 · 余温与长存</span>
@@ -140,4 +136,4 @@ const WORK_1 = {
             `
         }
     ]
-};
+});
