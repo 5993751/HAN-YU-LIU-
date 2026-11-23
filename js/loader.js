@@ -1,26 +1,20 @@
-/* =========================================================
-   进场幕布 (js/loader.js)
-   首屏关键资源就绪前，冷灰电视噪点幕布挡住入口；
-   就绪后显示“轻点进入”，点击 → 从随机一点像墨滴一样散开，
-   里面的大厅同步用 1.2s 淡入浮出来。
-   只负责“等待 + 放行”，不参与首页/展厅任何逻辑。
-   ========================================================= */
+/* 进场幕布：等待首屏媒体与字体就绪后放行，三点墨滴散开退场 */
 
-const CURTAIN_MIN_MS = 700;         // 最短展示：缓存命中时不至于一闪而过
-const CURTAIN_MAX_MS = 8000;        // 最长等待：资源再慢也放人
-const CURTAIN_BREEZE_MAX_MS = 5000; // 首个背景视频最多等 5 秒
-const CURTAIN_FONT_MAX_MS = 2000;   // 字体最多等 2 秒，等不到先用系统衬线
+const CURTAIN_MIN_MS = 700;
+const CURTAIN_MAX_MS = 8000;
+const CURTAIN_BREEZE_MAX_MS = 5000;
+const CURTAIN_FONT_MAX_MS = 2000;
 
 let curtainEl = null;
 let curtainStart = 0;
 let curtainReady = false;
 let curtainOpened = false;
-let curtainDrops = [];       // 每滴墨的时长（秒）
-let curtainPoints = [];      // 每滴墨的落点（百分比）
-let curtainProgress = [0, 0, 0];   // 每滴墨的当前进度 0~1
+let curtainDrops = [];
+let curtainPoints = [];
+let curtainProgress = [0, 0, 0];
 let curtainCanvas = null;
 let curtainCtx = null;
-let curtainBase = null;      // 灰底 + 光的离屏缓存
+let curtainBase = null;
 let curtainW = 0;
 let curtainH = 0;
 let curtainRadiusMax = 0;
@@ -30,7 +24,6 @@ function prefersReducedMotion() {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-/* 首个背景媒体就绪：信号由 js/breeze.js 派发（document 上的 breeze:first-ready） */
 function waitForBreezeMedia() {
     return new Promise(resolve => {
         if (document.documentElement.dataset.breezeReady === '1') {
@@ -45,7 +38,6 @@ function waitForBreezeMedia() {
     });
 }
 
-/* 首页轮播第一张图解码完成（出错也算完成，不能把人挡在门口） */
 function waitForFirstShowcaseImage() {
     return new Promise(resolve => {
         const img = document.querySelector('#feat-stage .showcase-slide.active img');
@@ -65,18 +57,30 @@ function waitForFirstShowcaseImage() {
 
 function waitForFonts() {
     return new Promise(resolve => {
-        if (!document.fonts || !document.fonts.ready) {
+        let settled = false;
+        const finish = () => {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(cap);
             resolve();
-            return;
+        };
+        const cap = window.setTimeout(finish, CURTAIN_FONT_MAX_MS);
+
+        const checkReady = () => {
+            if (!document.fonts || !document.fonts.ready) {
+                finish();
+                return;
+            }
+            document.fonts.ready.then(finish).catch(finish);
+        };
+
+        const sheet = document.getElementById('siteFontSheet');
+        if (sheet && sheet.media === 'print') {
+            sheet.addEventListener('load', checkReady, { once: true });
+            sheet.addEventListener('error', finish, { once: true });
+        } else {
+            checkReady();
         }
-        const cap = window.setTimeout(resolve, CURTAIN_FONT_MAX_MS);
-        document.fonts.ready.then(() => {
-            window.clearTimeout(cap);
-            resolve();
-        }).catch(() => {
-            window.clearTimeout(cap);
-            resolve();
-        });
     });
 }
 
@@ -85,8 +89,6 @@ function initLoadingCurtain() {
     if (!curtainEl || curtainOpened) return;
     curtainStart = performance.now();
 
-    // 三个圆：大致铺开在三个区域，各自随机抖动；
-    // 三档时长随机分配到三个位置，所以每次快慢顺序都不同，但彼此差距明显
     const anchors = [[28, 32], [72, 30], [50, 72]];
     const durations = [2.6, 3.6, 4.8];
     for (let i = durations.length - 1; i > 0; i--) {
@@ -101,10 +103,9 @@ function initLoadingCurtain() {
     }
     setupCurtainCanvas();
 
-    // 首屏只做一次：整块幕布从纸色薄纱里浮出来，和切页一样是淡的
     const veil = document.getElementById('curtainVeil');
     if (veil) {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        if (prefersReducedMotion()) {
             veil.style.display = 'none';
         } else {
             window.requestAnimationFrame(() => {
@@ -122,8 +123,6 @@ function initLoadingCurtain() {
     window.setTimeout(settle, CURTAIN_MAX_MS);
 }
 
-/* 资源齐了：先补足最短展示时间，再让旧文案淡出 → 换字 → 淡入，
-   不硬切；淡入完成后才开始“细线呼吸”，并接收点击 */
 function markCurtainReady() {
     if (curtainReady || curtainOpened || !curtainEl) return;
     curtainReady = true;
@@ -138,12 +137,12 @@ function markCurtainReady() {
             if (curtainOpened || !curtainEl) return;
             const hintText = document.getElementById('curtainHintText');
             const dots = document.getElementById('curtainDots');
-            if (hintText) hintText.textContent = '轻点进入';
-            if (dots) dots.style.display = 'none';   // 进入状态不再需要省略号
+            const readyLabel = (typeof SITE_TEXT !== 'undefined' && SITE_TEXT.curtain && SITE_TEXT.curtain.ready) || '轻点进入';
+            if (hintText) hintText.textContent = readyLabel;
+            if (dots) dots.style.display = 'none';
             if (textBox) textBox.classList.remove('curtain-text-out');
 
             curtainEl.addEventListener('pointerdown', openLoadingCurtain, { once: true });
-            // 个别浏览器不派发 pointerdown，补上触摸与点击，保证一定能进入
             curtainEl.addEventListener('touchstart', openLoadingCurtain, { once: true, passive: true });
             curtainEl.addEventListener('click', openLoadingCurtain, { once: true });
             document.addEventListener('keydown', onCurtainKey);
@@ -158,6 +157,25 @@ function onCurtainKey(e) {
     if (e.key === 'Enter' || e.key === ' ') openLoadingCurtain();
 }
 
+function onCurtainResize() {
+    if (!curtainCanvas) return;
+    sizeCurtainCanvas();
+    paintCurtain();
+}
+
+function cleanupCurtain() {
+    if (curtainResizeBound) {
+        window.removeEventListener('resize', onCurtainResize);
+        curtainResizeBound = false;
+    }
+    if (curtainCanvas && curtainCanvas.parentNode) {
+        curtainCanvas.parentNode.removeChild(curtainCanvas);
+    }
+    curtainCanvas = null;
+    curtainCtx = null;
+    curtainBase = null;
+}
+
 function openLoadingCurtain() {
     if (curtainOpened || !curtainEl) return;
     curtainOpened = true;
@@ -168,6 +186,7 @@ function openLoadingCurtain() {
 
     if (prefersReducedMotion()) {
         curtainEl.classList.add('curtain-hidden');
+        cleanupCurtain();
         return;
     }
 
@@ -175,7 +194,6 @@ function openLoadingCurtain() {
     runCurtainSpread();
 }
 
-/* 幕布底子交给 canvas：冷灰 + 三束环境光，和 CSS 原来那套完全同参数 */
 function setupCurtainCanvas() {
     if (!curtainEl || curtainCanvas) return;
     curtainCanvas = document.createElement('canvas');
@@ -188,22 +206,17 @@ function setupCurtainCanvas() {
 
     if (!curtainResizeBound) {
         curtainResizeBound = true;
-        window.addEventListener('resize', () => {
-            if (!curtainCanvas) return;
-            sizeCurtainCanvas();
-            paintCurtain();
-        });
+        window.addEventListener('resize', onCurtainResize);
     }
 }
 
-/* 灰底与光只画一次，缓存成离屏画布；每帧只做拷贝 + 挖洞 */
 function sizeCurtainCanvas() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     curtainW = window.innerWidth;
     curtainH = window.innerHeight;
     curtainCanvas.width = Math.round(curtainW * dpr);
     curtainCanvas.height = Math.round(curtainH * dpr);
-    curtainRadiusMax = Math.hypot(curtainW, curtainH) * 1.02;   // 任意落点都能盖满全屏
+    curtainRadiusMax = Math.hypot(curtainW, curtainH) * 1.02;
     curtainCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     curtainBase = document.createElement('canvas');
@@ -221,7 +234,6 @@ function sizeCurtainCanvas() {
     paintEllipseLight(bctx, w * 0.5, h * 0.42, w * 0.54, h * 0.46, [[0, 'rgba(255, 255, 255, 0.13)'], [0.70, 'rgba(255, 255, 255, 0)']]);
 }
 
-/* 以椭圆方式铺一层渐变，参数与 css 里的 radial-gradient 一致 */
 function paintEllipseLight(ctx, cx, cy, rx, ry, stops) {
     ctx.save();
     ctx.translate(cx, cy);
@@ -233,8 +245,6 @@ function paintEllipseLight(ctx, cx, cy, rx, ry, stops) {
     ctx.restore();
 }
 
-/* 整帧：铺灰底 + 光 → 再按进度把圆“挖掉”。
-   destination-out 是并集，挖掉的地方就是透明的，一定透出里面的内容 */
 function paintCurtain() {
     if (!curtainCtx) return;
     const ctx = curtainCtx;
@@ -268,7 +278,6 @@ function paintCurtain() {
     ctx.globalCompositeOperation = 'source-over';
 }
 
-/* 每滴按自己的时长长大，全部到齐后锁成全透，再整层淡出 */
 function runCurtainSpread() {
     const start = performance.now();
 
@@ -279,7 +288,7 @@ function runCurtainSpread() {
         curtainDrops.forEach((duration, i) => {
             const t = Math.min(1, elapsed / (duration * 1000));
             if (t < 1) allDone = false;
-            curtainProgress[i] = 1 - Math.pow(1 - t, 1.8);   // 起手果断、后段缓缓收尾
+            curtainProgress[i] = 1 - Math.pow(1 - t, 1.8);
         });
         paintCurtain();
 
@@ -292,7 +301,10 @@ function runCurtainSpread() {
         paintCurtain();
         window.setTimeout(() => {
             curtainEl.classList.add('curtain-fading');
-            window.setTimeout(() => curtainEl.classList.add('curtain-hidden'), 900);
+            window.setTimeout(() => {
+                curtainEl.classList.add('curtain-hidden');
+                cleanupCurtain();
+            }, 900);
         }, 160);
     };
 

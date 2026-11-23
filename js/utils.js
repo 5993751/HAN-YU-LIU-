@@ -1,7 +1,4 @@
-/* =========================================================
-   公共工具函数 (js/utils.js)
-   被 home / music / gallery 等模块复用的小函数
-   ========================================================= */
+/* 公共工具函数与文案应用入口 */
 
 function normalizeSrc(src) {
     if (!src) return "";
@@ -15,21 +12,110 @@ function setText(id, text) {
     if (el && text !== undefined) el.textContent = text;
 }
 
-/* 作品是否已上架：没写 isReady 字段的作品默认视为已上架 */
 function isProjectReady(project) {
     return !!project && project.isReady !== false;
 }
 
-/* ⭐ 图片懒加载：翻到第 index 页时，才装载该页与相邻 ±1 页的图片。
-   图片网址先存在 data-src 上（浏览器不下载），
-   调用本函数才装回 src 触发下载——浏览到才下载，远处的不占流量。 */
+function isTypingTarget(target) {
+    if (!target || !target.tagName) return false;
+    const tag = target.tagName.toUpperCase();
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+    return !!target.isContentEditable;
+}
+
+function isCurtainBlocking() {
+    const curtain = document.getElementById('pageCurtain');
+    if (!curtain) return false;
+    return !curtain.classList.contains('curtain-opening') && !curtain.classList.contains('curtain-hidden');
+}
+
+function resolveChapterTheme(themeName, project) {
+    const workThemes = project && project.themes;
+    const entry = (workThemes && workThemes[themeName])
+        || (typeof CHAPTER_THEMES !== 'undefined' && CHAPTER_THEMES[themeName]);
+    if (!entry) return { color: '#f2ede2', dark: false };
+    if (typeof entry === 'string') return { color: entry, dark: false };
+    return { color: entry.color || '#f2ede2', dark: !!entry.dark };
+}
+
+function getWorkCopy(project) {
+    if (!project) return { title: '', date: '', intro: '' };
+    return {
+        title: project.title || '',
+        date: project.date || '',
+        intro: project.intro || ''
+    };
+}
+
+function applySiteText() {
+    if (typeof SITE_TEXT === 'undefined') return;
+    if (SITE_TEXT.pageTitle) document.title = SITE_TEXT.pageTitle;
+
+    const c = SITE_TEXT.curtain || {};
+    setText('curtainEyebrow', c.eyebrow);
+    setText('curtainHintText', c.loading);
+
+    const h = SITE_TEXT.home || {};
+    setText('ui-site-title', h.siteTitle);
+    setText('ui-site-subtitle', h.siteSubtitle);
+    setText('btn-featured', h.navFeatured);
+    setText('btn-archive', h.navArchive);
+    setText('ui-mood-date', h.moodDate);
+    setText('ui-mood-text', h.moodText);
+    setText('feat-enter-btn', h.defaultEnterBtn);
+    setText('ui-rotate-hint', h.rotateHint);
+    const featPrev = document.getElementById('feat-prev-btn');
+    if (featPrev && h.prevSlideTitle) featPrev.title = h.prevSlideTitle;
+    const featNext = document.getElementById('feat-next-btn');
+    if (featNext && h.nextSlideTitle) featNext.title = h.nextSlideTitle;
+
+    const a = SITE_TEXT.archive || {};
+    setText('ui-archive-desc', a.intro);
+    setText('archive-empty', a.empty);
+    const searchEl = document.getElementById('archive-search');
+    if (searchEl && a.searchPlaceholder !== undefined) {
+        searchEl.placeholder = a.searchPlaceholder;
+    }
+    const sortLabels = {
+        default: a.sortDefault,
+        newest: a.sortNewest,
+        oldest: a.sortOldest
+    };
+    document.querySelectorAll('#archive-sort .archive-sort-btn').forEach(btn => {
+        const label = sortLabels[btn.dataset.sort];
+        if (label !== undefined) btn.textContent = label;
+    });
+
+    const g = SITE_TEXT.gallery || {};
+    setText('gal-back-link', g.back);
+    const galPrev = document.getElementById('gal-prev-btn');
+    if (galPrev && g.prevChapterTitle) galPrev.title = g.prevChapterTitle;
+    const galNext = document.getElementById('gal-next-btn');
+    if (galNext && g.nextChapterTitle) galNext.title = g.nextChapterTitle;
+
+    const f = SITE_TEXT.finale || {};
+    setText('finale-eyebrow', f.eyebrow);
+    setText('finale-title', f.title);
+    setText('finale-text', f.text);
+    setText('finale-divider-text', f.divider);
+    setText('finale-enter-btn', f.nextBtn);
+    setText('finale-replay-btn', f.replayBtn);
+    setText('finale-home-btn', f.homeBtn);
+    setText('finale-hint', f.hint);
+
+    const m = SITE_TEXT.music || {};
+    setText('globalMusicState', m.initialState);
+    setText('globalTrackName', m.initialTrack);
+    const nextMusicBtn = document.getElementById('globalNextBtn');
+    if (nextMusicBtn && m.nextTitle) nextMusicBtn.title = m.nextTitle;
+}
+
 function lazyLoadSlideImages(containerEl, index) {
     if (!containerEl) return;
 
     const loadOne = (i) => {
         const img = containerEl.querySelector(`[data-index="${i}"] img[data-src]`);
         if (img && img.dataset.src) {
-            // 图片真正解码完成后再打 developed，显影动画一定看得见（样式在 css/effects.css）
             const reveal = () => img.classList.add('developed');
             if (img.complete && img.naturalWidth) {
                 reveal();
@@ -41,15 +127,11 @@ function lazyLoadSlideImages(containerEl, index) {
         }
     };
 
-    loadOne(index);        // 当前页立即装载
-    loadOne(index - 1);    // 预载相邻页，保证翻页瞬间出图
+    loadOne(index);
+    loadOne(index - 1);
     loadOne(index + 1);
 }
 
-/* =========================================================
-   章节色温过渡用：把基色按色相偏移一点，得到同色系的第二种色
-   返回 hsla(...) 字符串，只用于极淡的漂移薄雾，不直接当背景色
-   ========================================================= */
 function shiftHueWash(hex, hueShift, lightShift, alpha) {
     const v = hex.replace('#', '');
     const full = v.length === 3 ? v.split('').map(c => c + c).join('') : v;
@@ -75,14 +157,4 @@ function shiftHueWash(hex, hueShift, lightShift, alpha) {
     hue = (hue + hueShift + 360) % 360;
     const light2 = Math.min(96, Math.max(4, light * 100 + lightShift));
     return `hsla(${hue.toFixed(0)}, ${(sat * 100).toFixed(0)}%, ${light2.toFixed(0)}%, ${alpha})`;
-}
-
-/* 作品对外文案统一入口：名字、日期、一句介绍都写在 data/copy.js，按作品 id 取 */
-function getWorkCopy(project) {
-    const entry = (typeof WORK_COPY !== 'undefined' && project && WORK_COPY[project.id]) || {};
-    return {
-        title: entry.title || '',
-        date: entry.date || '',
-        intro: entry.intro || ''
-    };
 }

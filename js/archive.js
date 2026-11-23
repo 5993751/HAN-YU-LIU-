@@ -1,18 +1,14 @@
-/* =========================================================
-   个人记录列表 (js/archive.js)
-   分类筛选 / 关键词搜索 / 排序
-   · 默认按标题首字母（汉字按拼音）排序，同首字母时新的在前
-   · 分类按钮从作品的 category 字段自动生成，新增作品无需改本文件
-   ========================================================= */
+/* 个人记录列表：分类筛选、搜索、排序与键盘直达 */
 
-let archiveCategory = '全部';
+const ARCHIVE_ALL_CATEGORY = (typeof SITE_TEXT !== 'undefined' && SITE_TEXT.archive && SITE_TEXT.archive.allCategory) || '全部';
+
+let archiveCategory = ARCHIVE_ALL_CATEGORY;
 let archiveQuery = '';
 let archiveSort = 'default';
 let hoveredArchiveItem = null;
 let archiveHoverKeyBound = false;
 let archiveOpening = false;
 
-/* 汉字按拼音排序：zh-Hans-CN 的 collation 即拼音顺序 */
 const archiveTitleCollator = new Intl.Collator('zh-Hans-CN', { sensitivity: 'base' });
 
 function initArchive() {
@@ -23,7 +19,6 @@ function initArchive() {
     initArchiveStickyState();
 }
 
-/* 工具栏静止时完全透明；真正吸顶、下方有内容经过时才浮出磨砂纸 */
 function initArchiveStickyState() {
     const toolbar = document.querySelector('.archive-toolbar');
     const scroller = document.getElementById('view-archive');
@@ -39,7 +34,6 @@ function initArchiveStickyState() {
 
     observer.observe(sentinel);
 
-    // 视图从隐藏切到显示时，先按当前位置校准一次，避免闪出一层底色
     requestAnimationFrame(() => {
         const scrollerTop = scroller.getBoundingClientRect().top;
         const sentinelTop = sentinel.getBoundingClientRect().top;
@@ -47,7 +41,6 @@ function initArchiveStickyState() {
     });
 }
 
-/* 把 "2026.9.30" / "2026-09-30" / "2026/9/30" 统一转成可比较的时间戳 */
 function parseArchiveDate(dateStr) {
     if (!dateStr) return 0;
     const parts = String(dateStr).split(/[.\-/]/).map(n => parseInt(n, 10) || 0);
@@ -55,12 +48,11 @@ function parseArchiveDate(dateStr) {
     return new Date(parts[0], (parts[1] || 1) - 1, parts[2] || 1).getTime();
 }
 
-/* 分类按钮：全部 + 数据里出现过的分类（去重，保持首次出现的顺序） */
 function renderArchiveFilters() {
     const box = document.getElementById('archive-filters');
     if (!box) return;
 
-    const categories = ['全部'];
+    const categories = [ARCHIVE_ALL_CATEGORY];
     WORKS_DATA.projects.forEach(proj => {
         if (proj.category && !categories.includes(proj.category)) {
             categories.push(proj.category);
@@ -111,7 +103,6 @@ function bindArchiveToolbar() {
         });
     }
 
-    // 记住鼠标当前停在哪个作品上：悬停时按 Enter / 空格 直接进入
     const grid = document.getElementById('archive-grid-container');
     if (grid && !archiveHoverKeyBound) {
         grid.addEventListener('mouseover', (e) => {
@@ -127,10 +118,12 @@ function bindArchiveToolbar() {
 
 function handleArchiveItemKey(e) {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    if (e.isComposing) return; // 输入法正在组词时先交给输入法
+    if (e.isComposing || isTypingTarget(e.target) || isCurtainBlocking()) return;
     if (document.body.classList.contains('mode-gallery')) return;
 
-    // 列表重绘过就丢弃旧节点，避免打开已不存在的作品
+    const archiveView = document.getElementById('view-archive');
+    if (!archiveView || !archiveView.classList.contains('active')) return;
+
     const item = hoveredArchiveItem && document.contains(hoveredArchiveItem) ? hoveredArchiveItem : null;
     if (!item) return;
 
@@ -138,14 +131,13 @@ function handleArchiveItemKey(e) {
     handleArchiveOpen(item);
 }
 
-/* 排序用日期：取 copy.js 里的作品日期（如 "2026.10.16"） */
 function getProjectSortDate(proj) {
     return getWorkCopy(proj).date;
 }
 
 function getVisibleProjects() {
     let list = WORKS_DATA.projects.filter(proj => {
-        const matchCategory = archiveCategory === '全部' || proj.category === archiveCategory;
+        const matchCategory = archiveCategory === ARCHIVE_ALL_CATEGORY || proj.category === archiveCategory;
         if (!matchCategory) return false;
         if (!archiveQuery) return true;
 
@@ -177,7 +169,6 @@ function getVisibleProjects() {
     return list;
 }
 
-/* 搜索命中：把标题里匹配的一段包起来上色 */
 function highlightArchiveTitle(title) {
     if (!archiveQuery) return title;
     const index = title.toLowerCase().indexOf(archiveQuery);
@@ -186,7 +177,6 @@ function highlightArchiveTitle(title) {
     return `${title.slice(0, index)}<mark class="ai-hit">${title.slice(index, end)}</mark>${title.slice(end)}`;
 }
 
-/* 日期拆成「年 / 月.日」两段，左侧竖排成日期戳 */
 function splitArchiveDate(dateText) {
     const parts = String(dateText).split('.');
     if (parts.length < 2) return { year: '', day: dateText };
@@ -204,12 +194,10 @@ function renderArchiveList() {
         const copy = getWorkCopy(proj);
         const date = splitArchiveDate(copy.date);
         const ready = isProjectReady(proj);
-        // 点击交给统一函数：先给这一行一个短暂的“压实”反馈，再进厅
+        // effects.css 通过 [onclick] 区分已上架条目并启用滚动浮现
         const clickAttr = ready ? 'onclick="handleArchiveOpen(this)"' : '';
-        // data-work 用于记录鼠标当前停在哪个作品上
         const workAttr = ready ? `data-work="${proj.id}"` : '';
         const lockedClass = ready ? '' : ' is-locked';
-        // 未上架的作品降低透明度且不可点击
         const opacityStyle = ready ? '' : 'style="opacity: 0.45;"';
         const titleText = copy.title;
         const summary = copy.intro
@@ -237,7 +225,6 @@ function renderArchiveList() {
     if (emptyTip) emptyTip.style.display = projects.length ? 'none' : 'block';
 }
 
-/* 打开某一条记录：停留 120ms 让这一行先显形，再交给整页淡变 */
 function handleArchiveOpen(item) {
     if (!item) return;
     const workId = item.dataset.work;

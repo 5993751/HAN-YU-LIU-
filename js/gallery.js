@@ -1,13 +1,10 @@
-/* =========================================================
-   万能展厅 (js/gallery.js)
-   逐章渲染 / 章节主题变色 / 换章切歌 / 记忆碎片零散浮现引擎
-   观展终章 · 谢幕推荐卡
-   ========================================================= */
+/* 展厅页面渲染、章节切换、散落图序列与谢幕卡 */
 
 let currentGalleryProject = null;
 let currentChapter = 1;
-let scatterTimers = []; // 记录多图散落浮现的定时器，翻页时随时清理
-let archiveReturnScroll = null; // 从个人记录进入展厅时记下的列表位置，回来时还原
+let scatterTimers = [];
+let archiveReturnScroll = null;
+let finaleNextWork = null;
 
 function clearScatterTimers() {
     scatterTimers.forEach(t => clearTimeout(t));
@@ -19,11 +16,10 @@ function openGallerySpace(workId, startCh = 1) {
     if (!currentGalleryProject) return;
 
     stopAutoSlide();
-    pauseBreezeBackground(); // 背景已看不见，暂停视频省流量
+    pauseBreezeBackground();
     clearScatterTimers();
-    hideFinaleOverlay(); // ⭐ 从谢幕卡"翻开它"进入新作品时，确保卡片已收起
+    hideFinaleOverlay();
 
-    // 只有从个人记录列表首次进入时才记位置；展厅内换作品、或从首页推荐进入都不覆盖
     const archiveView = document.getElementById('view-archive');
     if (!document.body.classList.contains('mode-gallery') && archiveView && archiveView.classList.contains('active')) {
         archiveReturnScroll = archiveView.scrollTop;
@@ -31,7 +27,6 @@ function openGallerySpace(workId, startCh = 1) {
         archiveReturnScroll = null;
     }
 
-    // 首页先整页退色，淡尽后再把展厅搭起来、浮到前台
     playSpaceDissolve(() => renderGallerySpace(startCh));
 }
 
@@ -46,20 +41,24 @@ function renderGallerySpace(startCh) {
         galContainer.classList.toggle('minimal-scatter-mode', currentGalleryProject.layoutMode === 'minimal-scatter');
     }
 
-    // ⭐ 日期留空时，顶栏只显示主标题，不出现多余圆点
     const galCopy = getWorkCopy(currentGalleryProject);
     const topTitleText = galCopy.date
         ? `${galCopy.title} · ${galCopy.date}`
         : galCopy.title;
     setText('gal-top-title', topTitleText);
 
-    leftStage.innerHTML = ''; rightNotes.innerHTML = ''; footerDots.innerHTML = '';
-    let footerTrackHTML = '';   // 先攒起来，最后统一包进可横向滑动的轨道里
+    leftStage.innerHTML = '';
+    rightNotes.innerHTML = '';
+    footerDots.innerHTML = '';
+    let footerTrackHTML = '';
 
-    currentGalleryProject.items.forEach((item, idx) => {
+    const scatterTitle = (typeof SITE_TEXT !== 'undefined' && SITE_TEXT.gallery && SITE_TEXT.gallery.scatterReplayTitle)
+        || '轻触画面可重新播放这组记忆碎片';
+    const items = currentGalleryProject.items || [];
+
+    items.forEach((item, idx) => {
         const indexNum = idx + 1;
 
-        // ⭐ 判断是否配置了多图零散浮现数组 (scatterImages)
         if (item.scatterImages && item.scatterImages.length > 0) {
             const cardsHTML = item.scatterImages.map((sc, sIdx) => `
                 <div class="scatter-card ${sc.isFinal ? 'is-final' : ''}" data-step="${sIdx}"
@@ -69,13 +68,13 @@ function renderGallerySpace(startCh) {
             `).join('');
 
             leftStage.innerHTML += `
-                <div class="gal-slide-item scatter-stage-item" data-index="${indexNum}" onclick="replayScatterCurrent()" title="轻触画面可重新播放这组记忆碎片">
+                <div class="gal-slide-item scatter-stage-item" data-index="${indexNum}" onclick="replayScatterCurrent()" title="${scatterTitle}">
                     <div class="scatter-canvas">${cardsHTML}</div>
                 </div>`;
         } else if (item.type === 'text') {
             leftStage.innerHTML += `
                 <div class="gal-slide-item" data-index="${indexNum}">
-                    <div class="text-only-card"><h3>${item.title}</h3><p>${item.essay}</p></div>
+                    <div class="text-only-card"><h3>${item.title}</h3><div class="text-only-body">${item.essay}</div></div>
                 </div>`;
         } else {
             leftStage.innerHTML += `
@@ -106,18 +105,26 @@ function renderGallerySpace(startCh) {
     document.getElementById('space-home').classList.remove('active');
     document.getElementById('space-gallery').classList.add('active');
 
-    if (currentGalleryProject.bgm && currentGalleryProject.bgm.length > 0) {
-        switchMusicContext(currentGalleryProject.bgm);
+    let safeStart = parseInt(startCh, 10) || 1;
+    if (items.length > 0) {
+        if (safeStart < 1) safeStart = 1;
+        if (safeStart > items.length) safeStart = items.length;
     }
-    updateGallery(startCh);
+
+    if (currentGalleryProject.bgm && currentGalleryProject.bgm.length > 0) {
+        const startItem = items[safeStart - 1];
+        const preferredSrc = startItem && startItem.bgmSrc ? startItem.bgmSrc : null;
+        switchMusicContext(currentGalleryProject.bgm, preferredSrc);
+    }
+
+    updateGallery(safeStart);
 }
 
 function closeGalleryToHome() {
     clearScatterTimers();
     cancelChapterDissolve();
-    hideFinaleOverlay(); // ⭐ Esc / 返回按钮 / 谢幕卡"回到大厅"时，同步收起谢幕卡
+    hideFinaleOverlay();
 
-    // 展厅先整页退色，淡尽后再切回大厅
     playSpaceDissolve(restoreHomeSpace);
 }
 
@@ -127,7 +134,6 @@ function restoreHomeSpace() {
 
     document.body.classList.remove('mode-gallery', 'dark-chapter');
     document.body.classList.add('mode-home');
-    // 章节主题只属于展厅：清掉，否则首页画框会继承上一章的专属底色与边框
     document.body.removeAttribute('data-active-theme');
     document.body.style.backgroundColor = 'var(--paper-base)';
     document.body.style.removeProperty('--chapter-drift');
@@ -138,19 +144,19 @@ function restoreHomeSpace() {
 
     if (hallPlaylist.length > 0) {
         activePlaylist = hallPlaylist;
-        // 回到大厅后，"下一首"从当前正在播的那首继续往后走
         activeTrackIndex = findPlaylistIndex(currentPlayingSrc, activeTrackIndex);
         syncNextButtonVisibility();
     }
 
-    // 返回大厅：背景动图与「近期作品」推荐都重新随机抽一个
     resumeBreezeBackground();
     switchToRandomBreezeBackground();
     refreshHomeFeatured();
 
-    startAutoSlide();
+    const featuredView = document.getElementById('view-featured');
+    if (featuredView && featuredView.classList.contains('active')) {
+        startAutoSlide();
+    }
 
-    // 从个人记录进来的，回到离开时的列表位置（display 切换会把 scrollTop 清零）
     if (archiveReturnScroll !== null) {
         const archiveView = document.getElementById('view-archive');
         const targetTop = archiveReturnScroll;
@@ -161,7 +167,6 @@ function restoreHomeSpace() {
     }
 }
 
-/* ⭐ 核心引擎：启动当前章节的"多图零散浮现"序列（上一张淡淡隐去，下一张在另一处柔和浮现，直至最后一张定格） */
 function startScatterSequence(chapterIndex) {
     clearScatterTimers();
     if (!currentGalleryProject) return;
@@ -171,7 +176,6 @@ function startScatterSequence(chapterIndex) {
     const slideEl = document.querySelector(`.gal-slide-item[data-index="${chapterIndex}"]`);
     if (!slideEl) return;
 
-    // 预装载本章所有碎片图片
     slideEl.querySelectorAll('img[data-src]').forEach(img => {
         img.src = img.dataset.src;
         img.removeAttribute('data-src');
@@ -180,13 +184,11 @@ function startScatterSequence(chapterIndex) {
     const cards = slideEl.querySelectorAll('.scatter-card');
     if (cards.length === 0) return;
 
-    // 重置所有碎片状态
     cards.forEach(c => c.classList.remove('visible', 'fading-out'));
 
     const stepTime = item.scatterInterval || 3200;
 
     cards.forEach((card, idx) => {
-        // 依次浮现
         const showTimer = setTimeout(() => {
             if (idx > 0) {
                 cards[idx - 1].classList.remove('visible');
@@ -212,17 +214,15 @@ function updateGallery(index) {
     currentChapter = index;
 
     const slides = document.querySelectorAll('.gal-slide-item');
-    slides.forEach(s => s.classList.toggle('active', parseInt(s.dataset.index) === currentChapter));
+    slides.forEach(s => s.classList.toggle('active', parseInt(s.dataset.index, 10) === currentChapter));
 
     lazyLoadSlideImages(document.getElementById('gal-left-stage'), currentChapter);
-
-    // ⭐ 若当前章是多图散落模式，立即启动散落浮现序列
     startScatterSequence(currentChapter);
 
     const boxes = document.querySelectorAll('.chapter-box');
     let activeTheme = 'warm';
     boxes.forEach(b => {
-        if (parseInt(b.dataset.index) === currentChapter) {
+        if (parseInt(b.dataset.index, 10) === currentChapter) {
             b.classList.add('active');
             activeTheme = b.dataset.theme;
         } else {
@@ -230,10 +230,10 @@ function updateGallery(index) {
         }
     });
 
-    const baseColor = themes[activeTheme] || '#f2ede2';
-    const isDarkTheme = DARK_THEMES.includes(activeTheme);
+    const themeObj = resolveChapterTheme(activeTheme, currentGalleryProject);
+    const baseColor = themeObj.color;
+    const isDarkTheme = themeObj.dark;
     document.body.style.backgroundColor = baseColor;
-    // 同色系漂移色：浅色章往暖侧偏、深色章往冷侧偏，只做一层极淡的空气
     document.body.style.setProperty('--chapter-drift',
         shiftHueWash(baseColor, isDarkTheme ? 12 : -10, isDarkTheme ? 6 : -4, isDarkTheme ? 0.22 : 0.42));
     document.body.classList.toggle('dark-chapter', isDarkTheme);
@@ -251,7 +251,6 @@ function updateGallery(index) {
     if (currentItem && currentItem.bgmSrc) {
         const itemTrack = { title: currentItem.bgmTitle || currentItem.title, src: currentItem.bgmSrc };
         if (normalizeSrc(itemTrack.src) !== currentPlayingSrc) {
-            // 先让"下一首"的起点对准当前曲目，再切歌；否则会从歌单旧位置往后走
             activeTrackIndex = findPlaylistIndex(itemTrack.src, activeTrackIndex);
             loadAndPlayTrack(itemTrack);
         }
@@ -260,26 +259,20 @@ function updateGallery(index) {
     const dots = document.querySelectorAll('.nav-dot-btn');
     dots.forEach((d, idx) => d.classList.toggle('active', idx + 1 === currentChapter));
 
-    // 章节多时底部导航可横向滑动，让当前章始终自动滚到中间
     const activeDot = document.querySelector('.nav-dot-btn.active');
     if (activeDot) activeDot.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
 
-    // 每次翻到这一章都重新抽一个照片倾斜角度
     applyGalleryTilt();
 }
 
 function changeChapter(dir) {
-    // 谢幕卡片弹出期间，冻结翻页（避免键盘/滑动误操作背后的章节）
     const finaleEl = document.getElementById('finaleOverlay');
     if (finaleEl && finaleEl.classList.contains('show')) return;
 
-    // ⭐ 观展终章：最后一章继续向后翻时，不再循环回第一章，
-    // 而是弹出谢幕卡片，随机推荐下一间展厅
     if (dir === 1 && currentGalleryProject && currentChapter >= currentGalleryProject.items.length) {
         showFinaleOverlay();
         return;
     }
-    // 目标章节先算好再交给淡变转场，避免化开期间重复触发时算错
     const targetChapter = currentChapter + dir;
     playChapterDissolve(() => updateGallery(targetChapter));
 }
@@ -289,50 +282,41 @@ function goToChapter(index) {
     playChapterDissolve(() => updateGallery(index));
 }
 
-/* =========================================================
-   ⭐ 观展终章 · 谢幕推荐卡（finale 系列）
-   最后一章继续向后翻 → 弹出谢幕卡：谢幕语 + 随机推荐下一间展厅
-   按钮：翻开它 / 再看一遍 / 回到大厅；点卡片外暗处 = 留在原地
-   ========================================================= */
-let finaleNextWork = null; // 本次谢幕卡抽中的推荐作品
-
-/* 从其他已上架作品中随机抽一部（排除当前作品；isReady 为 false 的草稿不参与） */
 function pickRandomNextWork() {
     if (!currentGalleryProject) return null;
     const pool = WORKS_DATA.projects.filter(p =>
-        p.id !== currentGalleryProject.id && isProjectReady(p) // 草稿（isReady: false）不参与推荐
+        p.id !== currentGalleryProject.id && isProjectReady(p)
     );
     if (pool.length === 0) return null;
     return pool[Math.floor(Math.random() * pool.length)];
 }
 
-/* 弹出谢幕卡：填充谢幕语与推荐位，并锁定背景滚动 */
 function showFinaleOverlay() {
     const overlay = document.getElementById('finaleOverlay');
     if (!overlay) {
-        // 保险：HTML 未就绪时退回旧的循环翻页行为，避免卡死在最后一章
         updateGallery(1);
         return;
     }
 
     finaleNextWork = pickRandomNextWork();
 
-    // 推荐位：抽得到其他作品才显示，否则整块隐藏
     const recSection = document.getElementById('finale-rec');
+    const enterBtn = document.getElementById('finale-enter-btn');
     if (finaleNextWork) {
         if (recSection) recSection.style.display = '';
+        if (enterBtn) enterBtn.style.display = '';
         const nextCopy = getWorkCopy(finaleNextWork);
         setText('finale-next-title', nextCopy.title);
         setText('finale-next-date', nextCopy.date);
     } else {
         if (recSection) recSection.style.display = 'none';
+        if (enterBtn) enterBtn.style.display = 'none';
     }
 
     overlay.classList.add('show');
-    document.body.style.overflow = 'hidden'; // 锁住背后展厅的滚动（手机端尤其需要）
+    document.body.style.overflow = 'hidden';
 }
 
-/* 收起谢幕卡，恢复滚动 */
 function hideFinaleOverlay() {
     const overlay = document.getElementById('finaleOverlay');
     if (!overlay || !overlay.classList.contains('show')) return;
@@ -340,20 +324,17 @@ function hideFinaleOverlay() {
     document.body.style.overflow = '';
 }
 
-/* 按钮：翻开推荐作品（从头读起） */
 function finaleEnterNext() {
     if (!finaleNextWork) return;
     hideFinaleOverlay();
     openGallerySpace(finaleNextWork.id, 1);
 }
 
-/* 按钮：再看一遍（回到当前作品第 1 章） */
 function finaleReplayCurrent() {
     hideFinaleOverlay();
     goToChapter(1);
 }
 
-/* 点击卡片外的暗色区域：收起卡片，留在最后一章 */
 function finaleDismiss() {
     hideFinaleOverlay();
 }
