@@ -134,16 +134,16 @@
     opacity: 0.82;
 }
 
-/* 竖屏首页：收紧画框与纸卡尺度，居中留白露出四周微风草地 */
+/* 竖屏首页：放大画框且上下留足空白，纸卡尺度维持精致协调 */
 @media (orientation: portrait) {
     #view-featured {
-        padding: 18px var(--gutter) calc(88px + env(safe-area-inset-bottom, 0px));
+        padding: 24px var(--gutter) calc(102px + env(safe-area-inset-bottom, 0px));
     }
     .featured-split-layout {
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start;
         height: auto;
-        min-height: calc(100dvh - var(--header-h) - 106px);
+        min-height: 0;
         gap: 0;
         align-items: center;
     }
@@ -159,16 +159,16 @@
         display: none;
     }
     .showcase-stage {
-        height: clamp(188px, 27dvh, 244px);
+        height: clamp(244px, 36dvh, 318px);
         max-height: none;
         width: 100%;
     }
     .showcase-slide .art-frame-wrapper {
-        padding: 8px;
+        padding: 9px;
     }
     .showcase-slide .art-frame-wrapper img {
-        max-width: min(74vw, 270px);
-        max-height: calc(clamp(188px, 27dvh, 244px) - 18px);
+        max-width: min(84vw, 316px);
+        max-height: calc(clamp(244px, 36dvh, 318px) - 20px);
     }
     .showcase-slide .text-only-card {
         padding: 18px 16px;
@@ -189,7 +189,7 @@
         z-index: 3;
         flex: none;
         width: min(86%, 332px);
-        margin: 28px auto 0;
+        margin: 38px auto 0;
         transform: none;
         display: block;
     }
@@ -291,16 +291,16 @@
 
     @media (min-width: 600px) {
         .showcase-stage {
-            height: clamp(250px, 34dvh, 340px);
+            height: clamp(300px, 40dvh, 400px);
         }
         .showcase-slide .art-frame-wrapper img {
-            max-width: min(440px, 68vw);
-            max-height: calc(clamp(250px, 34dvh, 340px) - 22px);
+            max-width: min(500px, 74vw);
+            max-height: calc(clamp(300px, 40dvh, 400px) - 24px);
         }
         .featured-card-wrap {
             width: min(76%, 460px);
             max-width: 460px;
-            margin: 36px auto 0;
+            margin: 44px auto 0;
         }
         .featured-left {
             padding: 66px 28px 28px 28px;
