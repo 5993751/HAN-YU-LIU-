@@ -39,16 +39,72 @@ img {
     transform: none;
 }
 
-/* 保留双光束、暗角与宣纸微雾，适度收敛尺寸与透明度适配手机屏 */
-body.mode-gallery .paper-light-leak { opacity: 0.84; }
-body.dark-chapter .paper-light-leak { opacity: 0.92; }
+/* 手机端防闪烁合成优化：移除大面积混合模式与视频实时滤镜，保留光影呼吸与纸感 */
+.breeze-clone {
+    filter: none;
+}
+.breeze-clone.clone-2 {
+    mix-blend-mode: normal;
+    opacity: 0.25;
+}
+.breeze-thin-veil::after {
+    mix-blend-mode: normal;
+    opacity: 0.28;
+    animation: none;
+}
+.page-transition-curtain::before {
+    mix-blend-mode: normal;
+    opacity: 0.16;
+    animation: none;
+}
+
+.vintage-paper-grain {
+    mix-blend-mode: normal;
+    opacity: 0.26;
+    transition: opacity 1s ease;
+}
+body.mode-gallery .vintage-paper-grain { opacity: 0.34; }
+body.dark-chapter .vintage-paper-grain { opacity: 0.18; }
+
+.paper-light-leak {
+    inset: -20px;
+    transition: opacity 1.1s ease;
+}
+body.mode-gallery .paper-light-leak { opacity: 0.80; }
+body.dark-chapter .paper-light-leak { opacity: 0.88; }
+
+/* 章节与空间淡变期间让光影层随纯 GPU 透明度柔和退场再浮现，避免切色瞬间跳变或逐帧重绘巨幅渐变 */
+body:has(.chapter-fading) .paper-light-leak,
+body:has(.space-fading) .paper-light-leak,
+body:has(.space-entering) .paper-light-leak {
+    opacity: 0;
+    transition: opacity 0.78s cubic-bezier(0.45, 0, 0.55, 1);
+}
+
+.light-pose {
+    inset: -28%;
+    will-change: auto;
+    transition: transform 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.light-vignette {
+    transition: transform 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
 
 .light-paper-mist {
+    inset: -20%;
+    mix-blend-mode: normal;
     background-size: 420px 420px;
 }
-body.mode-gallery .light-paper-mist { opacity: 0.34; }
-body.dark-chapter .light-paper-mist { opacity: 0.20; }
-body.mode-gallery .vintage-paper-grain { opacity: 0.62; }
+body.mode-gallery .light-paper-mist { opacity: 0.16; }
+body.dark-chapter .light-paper-mist { opacity: 0.09; }
+
+@keyframes mobileImageDevelop {
+    from { opacity: 0; transform: scale(1.008); }
+    to   { opacity: 1; transform: scale(1); }
+}
+.art-frame-wrapper img.developed {
+    animation: mobileImageDevelop 0.85s ease-out;
+}
 
 /* 开场幕布竖屏排版 */
 .page-transition-curtain .curtain-scene {

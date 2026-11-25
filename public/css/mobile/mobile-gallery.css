@@ -1,5 +1,18 @@
 /* 手机端展厅空间（<=900px 独立加载）：吸顶收缩画框、纸页正文、底部章节坞、各作品精细字号与横屏双栏 */
 
+#gal-left-stage,
+#gal-right-notes,
+.gal-slide-item {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.scatter-card,
+.scatter-card.visible,
+.scatter-card.fading-out {
+    filter: none;
+}
+
 /* 竖屏隐藏左右大圆按钮，改用底部悬浮章节坞 */
 @media (orientation: portrait) {
     .page-nav-arrow {
@@ -390,6 +403,9 @@ body.dark-chapter .mobile-dock-arrow {
         width: 100%;
         height: var(--gal-stage-h);
         padding: 12px 18px 14px;
+        clip-path: none;
+    }
+    .gallery-container.is-stage-collapsed .gallery-left {
         clip-path: inset(0 0 var(--stage-collapse, 0px) 0);
     }
 
@@ -452,16 +468,16 @@ body.dark-chapter .mobile-dock-arrow {
         -webkit-mask-image: none;
         mask-image: none;
         margin: 0 auto;
-        padding: 24px 20px calc(100px + env(safe-area-inset-bottom, 0px)) 20px;
-        border-radius: 18px 18px 0 0;
-        border-top: 1px solid rgba(95, 86, 72, 0.14);
-        background: linear-gradient(180deg, rgba(255, 252, 245, 0.36) 0%, rgba(255, 252, 245, 0.08) 120px, transparent 100%);
-        box-shadow: 0 -10px 24px -14px rgba(30, 26, 20, 0.12);
+        padding: 24px 20px calc(104px + env(safe-area-inset-bottom, 0px)) 20px;
+        border-top: 1px solid rgba(95, 86, 72, 0.15);
+        background: transparent;
+        box-shadow: none;
+        transition: border-color 1.2s ease;
     }
     body.dark-chapter .gallery-right {
         border-top-color: rgba(212, 175, 106, 0.18);
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 120px, transparent 100%);
-        box-shadow: 0 -12px 28px -12px rgba(0, 0, 0, 0.5);
+        background: transparent;
+        box-shadow: none;
     }
 
     @media (min-width: 600px) {

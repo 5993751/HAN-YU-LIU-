@@ -1,8 +1,6 @@
-/* 手机端氛围与联动（仅 <=900px 生效）：地址栏变色、底部章节坞居中、画框随滚收缩、陀螺仪光影视差 */
+/* 手机端氛围与联动（仅 <=900px 生效）：底部章节坞居中、画框随滚收缩、陀螺仪光影视差 */
 
 (function () {
-    const HOME_PAPER_COLOR = '#f2ede2';
-
     let scrollFrame = 0;
     let scrollBound = false;
 
@@ -22,12 +20,6 @@
 
     function isPortraitMobile() {
         return isMobileViewport() && window.innerHeight > window.innerWidth;
-    }
-
-    function syncThemeColor(hexColor) {
-        const meta = document.querySelector('meta[name="theme-color"]');
-        if (!meta) return;
-        meta.setAttribute('content', hexColor || HOME_PAPER_COLOR);
     }
 
     function centerHorizontalItem(containerEl, activeEl) {
@@ -75,6 +67,7 @@
         if (!container || !leftStage) return;
 
         if (!isPortraitMobile() || !document.body.classList.contains('mode-gallery')) {
+            container.classList.remove('is-stage-collapsed');
             container.style.removeProperty('--stage-collapse');
             container.style.removeProperty('--stage-progress');
             container.style.removeProperty('--stage-scale');
@@ -88,6 +81,7 @@
         const progress = maxCollapse > 0 ? collapse / maxCollapse : 0;
         const scale = Math.max(0.62, (stageH - collapse * 0.90) / stageH);
 
+        container.classList.toggle('is-stage-collapsed', collapse > 1);
         container.style.setProperty('--stage-collapse', `${collapse.toFixed(1)}px`);
         container.style.setProperty('--stage-progress', progress.toFixed(3));
         container.style.setProperty('--stage-scale', scale.toFixed(3));
@@ -119,6 +113,7 @@
 
         const container = document.getElementById('gal-container');
         if (container) {
+            container.classList.remove('is-stage-collapsed');
             container.style.setProperty('--stage-collapse', '0px');
             container.style.setProperty('--stage-progress', '0');
             container.style.setProperty('--stage-scale', '1');
@@ -126,7 +121,6 @@
 
         if (!isMobileViewport()) return;
 
-        if (ctx && ctx.baseColor) syncThemeColor(ctx.baseColor);
         ensureMobileDockArrows();
 
         const track = document.querySelector('#gal-footer-dots .footer-track');
@@ -140,12 +134,10 @@
         }
         const container = document.getElementById('gal-container');
         if (container) {
+            container.classList.remove('is-stage-collapsed');
             container.style.removeProperty('--stage-collapse');
             container.style.removeProperty('--stage-progress');
             container.style.removeProperty('--stage-scale');
-        }
-        if (isMobileViewport()) {
-            syncThemeColor(HOME_PAPER_COLOR);
         }
     };
 

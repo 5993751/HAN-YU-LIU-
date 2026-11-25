@@ -22,23 +22,18 @@ function initArchive() {
 function initArchiveStickyState() {
     const toolbar = document.querySelector('.archive-toolbar');
     const scroller = document.getElementById('view-archive');
-    if (!toolbar || !scroller || !('IntersectionObserver' in window)) return;
+    if (!toolbar || !scroller) return;
 
-    const sentinel = document.createElement('div');
-    sentinel.className = 'archive-toolbar-sentinel';
-    toolbar.parentNode.insertBefore(sentinel, toolbar);
+    const syncStuck = () => {
+        if (!scroller.classList.contains('active')) {
+            toolbar.classList.remove('is-stuck');
+            return;
+        }
+        toolbar.classList.toggle('is-stuck', scroller.scrollTop > 6);
+    };
 
-    const observer = new IntersectionObserver((entries) => {
-        toolbar.classList.toggle('is-stuck', !entries[0].isIntersecting);
-    }, { root: scroller, threshold: 0 });
-
-    observer.observe(sentinel);
-
-    requestAnimationFrame(() => {
-        const scrollerTop = scroller.getBoundingClientRect().top;
-        const sentinelTop = sentinel.getBoundingClientRect().top;
-        toolbar.classList.toggle('is-stuck', sentinelTop < scrollerTop);
-    });
+    scroller.addEventListener('scroll', syncStuck, { passive: true });
+    syncStuck();
 }
 
 function parseArchiveDate(dateStr) {
