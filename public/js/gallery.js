@@ -231,42 +231,77 @@ function startScatterSequence(chapterIndex) {
     const cards = slideEl.querySelectorAll('.scatter-card');
     if (cards.length === 0) return;
 
-    cards.forEach(c => c.classList.remove('visible', 'fading-out'));
-
     const runId = scatterRunId;
-    const stepTime = item.scatterInterval || 3200;
+    const FADE_IN_MS = 1700;
+    const FADE_OUT_MS = 1650;
+    const NEXT_AFTER_FADEOUT_MS = 1480;
+    const holdMs = Math.max(1850, (item.scatterInterval || 3200) - 900);
 
-    // 仅先加载第 1 张及预热第 2 张，避免弱网下同时并发 9 张图造成阻塞
+    // 重播时先让当前可见画面淡淡退去，再缓缓开启新一轮
+    let hadVisible = false;
+    cards.forEach((c, i) => {
+        if (c.classList.contains('visible') && !(cards.length === 1 && i === 0)) {
+            hadVisible = true;
+            c.classList.remove('visible');
+            c.classList.add('fading-out');
+            const resetPrev = setTimeout(() => {
+                if (runId !== scatterRunId) return;
+                if (!c.classList.contains('visible')) c.classList.remove('fading-out');
+            }, FADE_OUT_MS + 120);
+            scatterTimers.push(resetPrev);
+        } else {
+            c.classList.remove('visible', 'fading-out');
+        }
+    });
+
+    // 仅先加载第 1 张及预热第 2 张，避免弱网下同时并发过多大图造成阻塞
     ensureScatterCardLoaded(cards[0], 'high');
     if (cards[1]) ensureScatterCardLoaded(cards[1], 'low');
 
-    const scheduleNext = (idx) => {
+    const showCard = (idx) => {
         if (idx >= cards.length || runId !== scatterRunId) return;
-        const waitMs = idx === 0 ? 80 : stepTime;
 
-        const timer = setTimeout(() => {
+        ensureScatterCardLoaded(cards[idx], 'high').then(() => {
             if (runId !== scatterRunId) return;
-            ensureScatterCardLoaded(cards[idx], 'high').then(() => {
+
+            const cur = cards[idx];
+            cur.classList.remove('fading-out');
+            cur.classList.add('visible');
+
+            if (cards[idx + 1]) ensureScatterCardLoaded(cards[idx + 1], 'low');
+            if (cards[idx + 2]) ensureScatterCardLoaded(cards[idx + 2], 'low');
+
+            if (idx >= cards.length - 1) return;
+
+            // 先从容淡入并停留片刻，再缓缓淡出；几乎完全隐去后再引出下一张
+            const holdTimer = setTimeout(() => {
                 if (runId !== scatterRunId) return;
 
-                if (idx > 0) {
-                    cards[idx - 1].classList.remove('visible');
-                    cards[idx - 1].classList.add('fading-out');
-                }
-                cards[idx].classList.remove('fading-out');
-                cards[idx].classList.add('visible');
+                cur.classList.remove('visible');
+                cur.classList.add('fading-out');
 
-                if (cards[idx + 1]) ensureScatterCardLoaded(cards[idx + 1], 'low');
-                if (cards[idx + 2]) ensureScatterCardLoaded(cards[idx + 2], 'low');
+                const resetTimer = setTimeout(() => {
+                    if (runId !== scatterRunId) return;
+                    if (!cur.classList.contains('visible')) cur.classList.remove('fading-out');
+                }, FADE_OUT_MS + 120);
+                scatterTimers.push(resetTimer);
 
-                scheduleNext(idx + 1);
-            });
-        }, waitMs);
+                const nextTimer = setTimeout(() => {
+                    if (runId !== scatterRunId) return;
+                    showCard(idx + 1);
+                }, NEXT_AFTER_FADEOUT_MS);
+                scatterTimers.push(nextTimer);
+            }, FADE_IN_MS + holdMs);
 
-        scatterTimers.push(timer);
+            scatterTimers.push(holdTimer);
+        });
     };
 
-    scheduleNext(0);
+    const startTimer = setTimeout(() => {
+        if (runId !== scatterRunId) return;
+        showCard(0);
+    }, hadVisible ? 1350 : 220);
+    scatterTimers.push(startTimer);
 }
 
 function replayScatterCurrent() {
