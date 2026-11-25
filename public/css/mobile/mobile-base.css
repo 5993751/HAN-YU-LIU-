@@ -2,7 +2,7 @@
 
 :root {
     --gutter: clamp(18px, 5vw, 32px);
-    --header-h: 72px;
+    --header-h: 90px;
 }
 
 @media (min-width: 600px) {
