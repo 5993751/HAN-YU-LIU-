@@ -1,0 +1,185 @@
+/* 全站自然动态光影系统：双光束错拍云影漫游、展厅一章一光向、电脑端阻尼微视差 */
+
+@property --light-color-a {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+}
+
+@property --light-color-b {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+}
+
+@property --light-vignette-color {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: transparent;
+}
+
+.paper-light-leak {
+    --light-color-a: rgba(255, 214, 148, 0.50);
+    --light-color-b: rgba(255, 236, 198, 0.32);
+    --light-vignette-color: rgba(90, 74, 52, 0.20);
+    position: fixed;
+    inset: -60px;
+    z-index: 2;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0.94;
+    transform: translate3d(var(--light-px, 0px), var(--light-py, 0px), 0);
+    transition:
+        opacity 1.4s ease,
+        --light-color-a 1.6s ease,
+        --light-color-b 1.6s ease,
+        --light-vignette-color 1.6s ease;
+}
+
+body.mode-gallery .paper-light-leak {
+    opacity: 0.88;
+}
+
+body.dark-chapter .paper-light-leak {
+    opacity: 0.95;
+}
+
+.light-pose {
+    position: absolute;
+    inset: -60%;
+    pointer-events: none;
+    will-change: transform;
+    transition:
+        transform 1.9s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 1.6s ease;
+}
+
+.light-pose-a {
+    transform:
+        translate3d(var(--pose-a-x, -19%), var(--pose-a-y, -18%), 0)
+        rotate(var(--pose-a-rot, -14deg))
+        scale(var(--pose-a-sx, 1.15), var(--pose-a-sy, 1));
+}
+
+.light-pose-b {
+    transform:
+        translate3d(var(--pose-b-x, 6%), var(--pose-b-y, -14%), 0)
+        rotate(var(--pose-b-rot, 12deg))
+        scale(var(--pose-b-sx, 1.05), var(--pose-b-sy, 0.95));
+}
+
+.light-beam {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+.light-beam-primary {
+    background: radial-gradient(ellipse 46% 40% at 50% 50%, var(--light-color-a) 0%, transparent 82%);
+    background: radial-gradient(
+        ellipse 46% 40% at 50% 50%,
+        var(--light-color-a) 0%,
+        color-mix(in srgb, var(--light-color-a) 66%, transparent) 28%,
+        color-mix(in srgb, var(--light-color-a) 30%, transparent) 54%,
+        color-mix(in srgb, var(--light-color-a) 7%, transparent) 74%,
+        transparent 88%
+    );
+    animation: lightWanderPrimary 23s ease-in-out infinite alternate;
+}
+
+.light-beam-secondary {
+    background: radial-gradient(ellipse 42% 36% at 50% 50%, var(--light-color-b) 0%, transparent 82%);
+    background: radial-gradient(
+        ellipse 42% 36% at 50% 50%,
+        var(--light-color-b) 0%,
+        color-mix(in srgb, var(--light-color-b) 64%, transparent) 30%,
+        color-mix(in srgb, var(--light-color-b) 28%, transparent) 56%,
+        color-mix(in srgb, var(--light-color-b) 6%, transparent) 76%,
+        transparent 88%
+    );
+    animation: lightWanderSecondary 37s ease-in-out infinite alternate;
+}
+
+@keyframes lightWanderPrimary {
+    0%   { opacity: 0.86; transform: translate3d(-3%, -2%, 0) rotate(-3deg) scale(1, 0.98); }
+    24%  { opacity: 1;    transform: translate3d(4%, 1%, 0) rotate(4deg) scale(1.05, 1.02); }
+    52%  { opacity: 0.68; transform: translate3d(5%, 4%, 0) rotate(6deg) scale(0.96, 1.04); }
+    78%  { opacity: 0.96; transform: translate3d(-2%, 3%, 0) rotate(-5deg) scale(1.03, 0.97); }
+    100% { opacity: 0.78; transform: translate3d(2%, -4%, 0) rotate(2deg) scale(1.02, 1.03); }
+}
+
+@keyframes lightWanderSecondary {
+    0%   { opacity: 0.64; transform: translate3d(4%, 3%, 0) rotate(4deg) scale(1.02, 0.96); }
+    28%  { opacity: 0.95; transform: translate3d(-3%, 4%, 0) rotate(-4deg) scale(1.06, 1.03); }
+    58%  { opacity: 0.54; transform: translate3d(-5%, -2%, 0) rotate(-6deg) scale(0.95, 1.02); }
+    82%  { opacity: 0.88; transform: translate3d(2%, -4%, 0) rotate(5deg) scale(1.04, 0.98); }
+    100% { opacity: 0.72; transform: translate3d(-2%, 2%, 0) rotate(-2deg) scale(1, 1.03); }
+}
+
+.light-vignette {
+    position: absolute;
+    inset: -14%;
+    pointer-events: none;
+    transform: translate3d(var(--vig-x, 0%), var(--vig-y, 0%), 0);
+    transition:
+        transform 1.9s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 1.6s ease;
+    background: radial-gradient(ellipse 78% 74% at 50% 50%, transparent 48%, var(--light-vignette-color) 100%);
+    background: radial-gradient(
+        ellipse 78% 74% at 50% 50%,
+        transparent 44%,
+        color-mix(in srgb, var(--light-vignette-color) 36%, transparent) 72%,
+        var(--light-vignette-color) 100%
+    );
+    animation: vignetteBreathe 31s ease-in-out infinite alternate;
+}
+
+@keyframes vignetteBreathe {
+    0%   { opacity: 0.84; transform: translate3d(var(--vig-x, 0%), var(--vig-y, 0%), 0) scale(1); }
+    50%  { opacity: 1;    transform: translate3d(var(--vig-x, 0%), var(--vig-y, 0%), 0) scale(1.03); }
+    100% { opacity: 0.88; transform: translate3d(var(--vig-x, 0%), var(--vig-y, 0%), 0) scale(0.98); }
+}
+
+.light-paper-mist {
+    position: absolute;
+    inset: -35%;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: soft-light;
+    will-change: transform, opacity;
+    transition: opacity 1.4s ease;
+    background-image:
+        url("data:image/svg+xml,%3Csvg width='600' height='600' viewBox='0 0 600 600' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperMist' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='3' seed='19' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0.08  0 1 0 0 0.06  0 0 1 0 0.02  0 0 0 0.22 0'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23paperMist)'/%3E%3C/svg%3E");
+    background-size: 600px 600px;
+    animation: paperMistFlow 52s ease-in-out infinite alternate;
+}
+
+body.mode-gallery .light-paper-mist {
+    opacity: 0.42;
+}
+
+body.dark-chapter .light-paper-mist {
+    opacity: 0.24;
+}
+
+@keyframes paperMistFlow {
+    0%   { transform: translate3d(-4%, -3%, 0) scale(1.02) rotate(-1.5deg); }
+    50%  { transform: translate3d(3%, 2.5%, 0) scale(1.08) rotate(1.2deg); }
+    100% { transform: translate3d(-2%, 4%, 0) scale(1.04) rotate(0.5deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .paper-light-leak,
+    .light-pose,
+    .light-vignette,
+    .light-paper-mist {
+        transition: none;
+    }
+    .light-beam-primary,
+    .light-beam-secondary,
+    .light-vignette,
+    .light-paper-mist {
+        animation: none;
+    }
+}

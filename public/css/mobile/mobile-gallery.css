@@ -1,0 +1,585 @@
+/* 手机端展厅空间（<=900px 独立加载）：吸顶收缩画框、纸页正文、底部章节坞、各作品精细字号与横屏双栏 */
+
+/* 竖屏隐藏左右大圆按钮，改用底部悬浮章节坞 */
+@media (orientation: portrait) {
+    .page-nav-arrow {
+        display: none;
+    }
+}
+
+/* 底部悬浮章节坞 */
+.gallery-footer {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-width: calc(100vw - 24px);
+    height: 46px;
+    padding: 0 4px;
+    border-radius: 23px;
+    gap: 2px;
+    z-index: 35;
+    background: rgba(248, 244, 234, 0.94);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 8px 24px rgba(30, 25, 18, 0.12);
+    transition: background-color 0.8s ease, border-color 0.8s ease;
+}
+body.dark-chapter .gallery-footer {
+    background: rgba(26, 23, 19, 0.92);
+    border-color: rgba(212, 175, 106, 0.22);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.48);
+}
+
+.mobile-dock-arrow {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 44px;
+    border: none;
+    background: none;
+    color: var(--ink-main);
+    font-size: 19px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+}
+body.dark-chapter .mobile-dock-arrow {
+    color: #e2d8c5;
+}
+.mobile-dock-arrow:active {
+    transform: scale(0.86);
+    opacity: 0.65;
+}
+
+.footer-track {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    gap: 2px;
+    padding: 0 2px;
+}
+.footer-track::-webkit-scrollbar {
+    display: none;
+}
+
+.nav-dot-btn {
+    flex: 0 0 auto;
+    min-width: 38px;
+    min-height: 44px;
+    padding: 0 7px;
+    font-size: 14.5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.nav-dot-btn.active {
+    transform: translateY(-1px);
+}
+.nav-dot-btn.active::after {
+    bottom: 6px;
+}
+.nav-dot-btn:active {
+    transform: scale(0.92);
+    opacity: 0.7;
+}
+
+/* 普通单幅画作右下角极细微的全屏查看提示角标 */
+.gal-slide-item:not(.scatter-stage-item) .art-frame-wrapper::after {
+    content: "⤢";
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(38, 34, 29, 0.36);
+    color: rgba(255, 252, 245, 0.9);
+    font-size: 11px;
+    line-height: 20px;
+    text-align: center;
+    pointer-events: none;
+}
+
+/* 章节与各作品专属手机字号校准，避免 20 字诗行在窄屏折成尴尬孤字 */
+.chapter-badge {
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    gap: 8px;
+}
+.badge-num {
+    font-size: 14px;
+    letter-spacing: 1.5px;
+}
+.badge-char {
+    font-size: 17px;
+    letter-spacing: 3px;
+}
+.chapter-title {
+    font-size: clamp(21px, 5.6vw, 25px);
+    line-height: 1.36;
+    margin-bottom: 18px;
+    letter-spacing: 1.8px;
+    word-break: break-word;
+}
+.gallery-container.minimal-scatter-mode .chapter-title {
+    font-size: clamp(22px, 5.8vw, 26px);
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+}
+.chapter-essay {
+    font-size: clamp(14.5px, 3.9vw, 15.5px);
+    line-height: 2.02;
+    letter-spacing: 0.8px;
+    overflow-wrap: break-word;
+}
+
+.era-stamp {
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+}
+.w1-verse .verse-scene {
+    margin-bottom: 20px;
+    padding-left: 12px;
+    font-size: clamp(13px, 3.6vw, 14.5px);
+    line-height: 2.0;
+    letter-spacing: 0.8px;
+}
+.w1-verse .verse-body {
+    font-size: clamp(14.5px, 3.9vw, 15.5px);
+    line-height: 2.15;
+    letter-spacing: 1.1px;
+}
+.w1-verse .verse-turn {
+    margin-top: 20px;
+    padding-top: 15px;
+    font-size: clamp(15.5px, 4.2vw, 17.5px);
+    line-height: 1.95;
+    letter-spacing: 1.2px;
+}
+
+.w2-stanza-dramatic {
+    gap: 14px;
+}
+.verse-pair {
+    padding-left: 13px;
+}
+.verse-pair .v-en {
+    font-size: clamp(16.5px, 4.5vw, 19.5px);
+    letter-spacing: 0.6px;
+    line-height: 1.32;
+}
+.verse-pair .v-zh {
+    font-size: 14px;
+    letter-spacing: 2px;
+}
+.verse-pair.climax .v-en {
+    font-size: clamp(18px, 4.9vw, 21.5px);
+    letter-spacing: 0.6px;
+}
+.verse-pair.climax .v-zh {
+    font-size: 15.5px;
+    letter-spacing: 2.4px;
+}
+
+.w2-prose-limbo .lead-line {
+    font-size: 18px;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+}
+.w2-prose-limbo .dialogue-block {
+    padding: 12px 15px;
+    margin: 16px 0;
+}
+.w2-prose-limbo .sleep-fade-2 {
+    font-size: 16px;
+    letter-spacing: 2.5px;
+}
+
+.w2-prose-sky .float-callout {
+    font-size: 16.5px;
+    letter-spacing: 3px;
+    padding: 6px 0 6px 20px;
+}
+.w2-prose-sky .stop-mind {
+    font-size: 16px;
+    letter-spacing: 2px;
+    margin: 16px 0;
+}
+.w2-prose-sky .final-free {
+    margin-top: 20px;
+    font-size: 17px;
+    letter-spacing: 2.5px;
+}
+.w2-prose-sky .final-free span {
+    font-size: 20px;
+}
+
+.w3-monologue p {
+    margin-bottom: 16px;
+    font-size: clamp(14px, 3.8vw, 15.5px);
+    line-height: 2.1;
+    letter-spacing: 0.8px;
+}
+.w3-ch1 .m-dim {
+    font-size: 13.5px;
+}
+.w3-ch1 .m-rise {
+    margin-top: 20px;
+    letter-spacing: 1.8px;
+}
+.w3-ch1 .m-question,
+.w3-ch2 .m-question {
+    margin-top: 20px;
+    font-size: clamp(15.5px, 4.2vw, 17px);
+    letter-spacing: 1.2px;
+    line-height: 2.15;
+}
+.w3-ch2 .m-stagger {
+    margin: 18px 0;
+    padding-left: 10px;
+}
+.w3-ch2 .s-indent-1 {
+    padding-left: 10px;
+}
+.w3-ch2 .s-indent-2 {
+    padding-left: 20px;
+}
+.w3-ch2 .m-bridge {
+    font-size: 14px;
+    letter-spacing: 4px;
+    margin: 16px 0;
+}
+.w3-ch3 .m-quote {
+    font-size: 17.5px;
+    letter-spacing: 2px;
+}
+.w3-ch3 .sink-2 {
+    padding-left: 8px;
+}
+.w3-ch3 .sink-3 {
+    padding-left: 16px;
+    font-size: 14px;
+}
+.w3-ch3 .sink-4 {
+    font-size: 16px;
+    letter-spacing: 2px;
+}
+.w3-ch4 p {
+    letter-spacing: 2.2px;
+}
+.w3-ch4 .walk-1 {
+    font-size: 16px;
+}
+.w3-ch4 .walk-2 {
+    font-size: 15.5px;
+    padding-left: 12px;
+    margin-bottom: 22px;
+}
+.w3-ch4 .walk-3 {
+    font-size: 14.5px;
+    padding-left: 24px;
+    margin-bottom: 30px;
+}
+.w3-ch4 .walk-4 {
+    font-size: 16px;
+    margin-bottom: 36px;
+}
+.w3-ch4 .walk-call {
+    font-size: 20px;
+    letter-spacing: 3.5px;
+}
+
+.text-only-card {
+    padding: 24px 20px;
+    max-width: 100%;
+}
+.text-only-card h3 {
+    font-size: 19px;
+    margin-bottom: 14px;
+}
+.text-only-card .text-only-body,
+.text-only-card p {
+    font-size: 14px;
+    line-height: 1.95;
+}
+
+/* 竖屏沉浸式展厅：画作吸顶并随下滑平滑收缩，纸页正文自下缓缓上浮覆读 */
+@media (orientation: portrait) {
+    :root {
+        --gal-topbar-h: calc(50px + env(safe-area-inset-top, 0px));
+        --gal-stage-h: clamp(236px, 44dvh, 350px);
+    }
+
+    @media (min-width: 600px) {
+        :root {
+            --gal-stage-h: clamp(320px, 49dvh, 450px);
+        }
+    }
+
+    #space-gallery.active {
+        height: 100dvh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gallery-topbar {
+        height: var(--gal-topbar-h);
+        padding: env(safe-area-inset-top, 0px) 14px 0 10px;
+        flex-shrink: 0;
+        z-index: 40;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+    .back-link {
+        min-height: 44px;
+        padding: 0 8px;
+        display: inline-flex;
+        align-items: center;
+        font-size: 14px;
+        letter-spacing: 1.5px;
+    }
+    .back-link:active {
+        opacity: 0.6;
+    }
+    .gallery-top-title {
+        display: block;
+        left: 43%;
+        max-width: 38vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 12px;
+        letter-spacing: 1.4px;
+    }
+    @media (max-width: 410px) {
+        .gallery-top-title {
+            display: none;
+        }
+    }
+    .gallery-music-placeholder {
+        width: 110px;
+    }
+
+    .gallery-container,
+    .gallery-container.cinematic-mode,
+    .gallery-container.minimal-scatter-mode {
+        display: block;
+        flex: 1;
+        height: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding: 0;
+    }
+
+    .gallery-left,
+    .gallery-container.cinematic-mode .gallery-left,
+    .gallery-container.minimal-scatter-mode .gallery-left {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        flex: none;
+        width: 100%;
+        height: var(--gal-stage-h);
+        padding: 12px 18px 14px;
+        clip-path: inset(0 0 var(--stage-collapse, 0px) 0);
+    }
+
+    /* 吸顶收缩后的轻量纸底承托，避免下方滑过的正文透过画框区域 */
+    #gal-left-stage::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background-color: var(--gal-stage-bg, var(--paper-base));
+        opacity: calc(var(--stage-progress, 0) * 0.94);
+        border-bottom: 1px solid rgba(95, 86, 72, calc(var(--stage-progress, 0) * 0.16));
+        transition: background-color 1.5s cubic-bezier(.4, 0, .3, 1);
+        pointer-events: none;
+    }
+
+    /* 使用 CSS 独立 scale 属性缩放画框，不干扰原有的 transform / opacity 淡变 */
+    .gal-slide-item {
+        padding: 10px 16px 14px;
+        scale: var(--stage-scale, 1);
+        transform-origin: 50% 8%;
+    }
+
+    .gal-slide-item .art-frame-wrapper,
+    .gallery-container.cinematic-mode .gal-slide-item .art-frame-wrapper {
+        padding: 9px;
+    }
+    .gal-slide-item .art-frame-wrapper img,
+    .gallery-container.cinematic-mode .gal-slide-item .art-frame-wrapper img,
+    body[data-active-theme="w3-sunset"] .gal-slide-item .art-frame-wrapper img {
+        max-width: calc(100vw - 54px);
+        max-height: calc(var(--gal-stage-h) - 38px);
+    }
+
+    .scatter-canvas {
+        width: 100%;
+        height: calc(var(--gal-stage-h) - 20px);
+        max-height: none;
+    }
+    .scatter-card {
+        max-width: 76%;
+        max-height: 78%;
+    }
+    .scatter-card.is-final {
+        max-width: 88%;
+        max-height: 86%;
+    }
+    .scatter-card img {
+        max-width: 100%;
+        max-height: calc(var(--gal-stage-h) - 34px);
+    }
+
+    .gallery-right {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+        overflow: visible;
+        -webkit-mask-image: none;
+        mask-image: none;
+        margin: 0 auto;
+        padding: 24px 20px calc(100px + env(safe-area-inset-bottom, 0px)) 20px;
+        border-radius: 18px 18px 0 0;
+        border-top: 1px solid rgba(95, 86, 72, 0.14);
+        background: linear-gradient(180deg, rgba(255, 252, 245, 0.36) 0%, rgba(255, 252, 245, 0.08) 120px, transparent 100%);
+        box-shadow: 0 -10px 24px -14px rgba(30, 26, 20, 0.12);
+    }
+    body.dark-chapter .gallery-right {
+        border-top-color: rgba(212, 175, 106, 0.18);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 120px, transparent 100%);
+        box-shadow: 0 -12px 28px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (min-width: 600px) {
+        .gallery-right {
+            max-width: 640px;
+            padding: 28px 36px calc(108px + env(safe-area-inset-bottom, 0px)) 36px;
+        }
+        .gal-slide-item .art-frame-wrapper img,
+        .gallery-container.cinematic-mode .gal-slide-item .art-frame-wrapper img {
+            max-width: min(600px, calc(100vw - 72px));
+        }
+    }
+}
+
+/* 横屏展厅：迷你电脑左右分栏 */
+@media (orientation: landscape) {
+    #space-gallery.active {
+        height: 100dvh;
+        overflow: hidden;
+    }
+    .gallery-topbar {
+        padding: 6px 18px;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+    .back-link {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+    .gallery-top-title {
+        display: block;
+        max-width: 44vw;
+        font-size: 12px;
+        letter-spacing: 1.8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    body.mode-gallery .global-music-dock {
+        top: 5px;
+        right: 16px;
+    }
+    .gallery-container,
+    .gallery-container.cinematic-mode,
+    .gallery-container.minimal-scatter-mode {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        flex: 1;
+        height: auto;
+        overflow: hidden;
+        gap: 22px;
+        padding: 8px 22px calc(54px + env(safe-area-inset-bottom, 0px)) 22px;
+    }
+    .gallery-left,
+    .gallery-container.cinematic-mode .gallery-left,
+    .gallery-container.minimal-scatter-mode .gallery-left {
+        position: relative;
+        flex: 0 0 46%;
+        width: 46%;
+        height: auto;
+        min-height: 0;
+        clip-path: none;
+    }
+    .gal-slide-item {
+        scale: 1;
+        padding: 4px 10px;
+    }
+    .gal-slide-item .art-frame-wrapper,
+    .gallery-container.cinematic-mode .gal-slide-item .art-frame-wrapper {
+        padding: 9px;
+    }
+    .gal-slide-item .art-frame-wrapper img,
+    .gallery-container.cinematic-mode .gal-slide-item .art-frame-wrapper img,
+    body[data-active-theme="w3-sunset"] .gal-slide-item .art-frame-wrapper img {
+        max-width: 100%;
+        max-height: calc(100dvh - 122px);
+    }
+    .scatter-canvas {
+        height: 100%;
+        max-height: none;
+    }
+    .scatter-card img {
+        max-height: calc(100dvh - 126px);
+    }
+    .gallery-right {
+        flex: 1;
+        max-width: none;
+        max-height: 100%;
+        overflow-y: auto;
+        padding: 6px 10px 18px 0;
+        border-top: none;
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+    }
+    .page-nav-arrow {
+        top: 50%;
+        bottom: auto;
+        transform: translateY(-50%);
+        width: 34px;
+        height: 34px;
+        font-size: 17px;
+    }
+    .arrow-left { left: 4px; }
+    .arrow-right { right: 4px; }
+
+    .gallery-footer {
+        height: 38px;
+        bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+        border-radius: 19px;
+    }
+    .mobile-dock-arrow,
+    .nav-dot-btn {
+        min-height: 38px;
+        height: 38px;
+        font-size: 13.5px;
+    }
+    .nav-dot-btn.active::after {
+        bottom: 4px;
+    }
+}

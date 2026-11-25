@@ -1,0 +1,274 @@
+/* 手机端全局基础层（<=900px 独立加载，零影响电脑端）：安全区、字体、光影微调、音乐胶囊、开屏幕布、谢幕抽屉、全屏看图器 */
+
+:root {
+    --gutter: clamp(18px, 5vw, 32px);
+    --header-h: 72px;
+}
+
+@media (min-width: 600px) {
+    :root {
+        --gutter: 36px;
+    }
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+.s-dot,
+.archive-item,
+.showcase-switch,
+.showcase-stage,
+.gal-slide-item {
+    touch-action: manipulation;
+}
+
+img {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* 手机端无隶书，统一使用已加载的霞鹜文楷 */
+.nav-btn,
+.archive-filter-btn,
+.archive-sort-btn {
+    font-family: 'LXGW WenKai TC', 'Noto Serif SC', serif;
+    transform: none;
+}
+
+/* 保留双光束、暗角与宣纸微雾，适度收敛尺寸与透明度适配手机屏 */
+body.mode-gallery .paper-light-leak { opacity: 0.84; }
+body.dark-chapter .paper-light-leak { opacity: 0.92; }
+
+.light-paper-mist {
+    background-size: 420px 420px;
+}
+body.mode-gallery .light-paper-mist { opacity: 0.34; }
+body.dark-chapter .light-paper-mist { opacity: 0.20; }
+body.mode-gallery .vintage-paper-grain { opacity: 0.62; }
+
+/* 开场幕布竖屏排版 */
+.page-transition-curtain .curtain-scene {
+    top: 58%;
+    width: 88vw;
+    white-space: normal;
+}
+.page-transition-curtain .curtain-eyebrow {
+    font-size: 10px;
+    letter-spacing: 3px;
+}
+.page-transition-curtain .curtain-rule {
+    margin: 16px auto 15px auto;
+}
+.page-transition-curtain .curtain-hint {
+    font-size: 17px;
+    letter-spacing: 4px;
+}
+
+/* 全局留声机胶囊：去毛玻璃省电，按首页/展厅分位适配安全区 */
+.music-toggle-btn,
+.music-next-btn {
+    background: rgba(249, 245, 236, 0.95);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    height: 33px;
+    font-size: 11.5px;
+    box-shadow: 0 3px 12px rgba(30, 27, 22, 0.08);
+}
+
+.music-toggle-btn {
+    padding: 5px 12px;
+    gap: 6px;
+    max-width: 62vw;
+}
+.music-toggle-btn:active,
+.music-next-btn:active {
+    transform: scale(0.95);
+    opacity: 0.78;
+}
+
+.music-next-btn {
+    min-width: 33px;
+    padding: 0 10px;
+}
+
+#globalTrackName {
+    display: inline-block;
+    max-width: 7.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.mode-home .global-music-dock {
+    left: auto;
+    right: var(--gutter);
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100vw - 36px);
+}
+
+body.mode-gallery .global-music-dock {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    right: 14px;
+    bottom: auto;
+    left: auto;
+    z-index: 45;
+}
+
+/* 展厅内正在播放时收起“正在听：”前缀，仅保留留声机动画与曲名，未唤醒前保留提示语 */
+body.mode-gallery #globalWave.playing ~ .music-state {
+    display: none;
+}
+
+body.dark-chapter .music-toggle-btn,
+body.dark-chapter .music-next-btn {
+    background: rgba(28, 25, 21, 0.92);
+}
+
+/* 谢幕卡：窄屏竖屏采用底部上滑纸抽屉，大屏/横屏居中弹出 */
+.finale-overlay {
+    padding: 18px;
+    background: rgba(24, 20, 15, 0.56);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+.finale-card {
+    width: min(420px, 92vw);
+    max-height: calc(100dvh - 36px);
+    padding: 28px 24px 22px;
+}
+.finale-title {
+    font-size: 22px;
+    letter-spacing: 7px;
+    text-indent: 7px;
+}
+.finale-rec-title {
+    font-size: 18px;
+}
+.finale-btn-primary,
+.finale-btn-ghost {
+    min-height: 44px;
+}
+
+@media (max-width: 599px) and (orientation: portrait) {
+    .finale-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+    .finale-card {
+        position: relative;
+        width: 100%;
+        max-height: 86dvh;
+        border-radius: 18px 18px 0 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        padding: 26px 22px calc(24px + env(safe-area-inset-bottom, 0px));
+        transform: translateY(100%);
+        transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .finale-card::before {
+        content: "";
+        display: block;
+        width: 36px;
+        height: 3.5px;
+        margin: -12px auto 16px;
+        border-radius: 2px;
+        background: rgba(95, 86, 72, 0.28);
+    }
+    .finale-overlay.show .finale-card {
+        transform: translateY(0);
+    }
+}
+
+/* 展厅画作全屏查看器（由 mobile-viewer.js 按需挂载） */
+.mobile-art-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 9500;
+    display: flex;
+    flex-direction: column;
+    background: rgba(14, 13, 11, 0.96);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+    -webkit-user-select: none;
+    user-select: none;
+}
+.mobile-art-viewer.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mav-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 6px 18px;
+    flex-shrink: 0;
+}
+.mav-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'LXGW WenKai TC', 'Noto Serif SC', serif;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    color: rgba(238, 232, 220, 0.78);
+}
+.mav-close {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: none;
+    border-radius: 50%;
+    color: rgba(242, 237, 226, 0.9);
+    font-size: 20px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.mav-close:active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mav-stage {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    touch-action: none;
+    padding: 8px;
+}
+.mav-img {
+    max-width: 94vw;
+    max-height: 80dvh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    border-radius: 2px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+    transform-origin: 50% 50%;
+    will-change: transform;
+}
+
+.mav-hint {
+    text-align: center;
+    padding: 8px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+    font-family: 'LXGW WenKai TC', 'Noto Serif SC', serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: rgba(232, 224, 210, 0.46);
+    flex-shrink: 0;
+}

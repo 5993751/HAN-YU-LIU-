@@ -1,0 +1,97 @@
+/* 全站色彩变量、纸张基底与微风背景、颗粒及空间切换层（第 1 层） */
+
+:root {
+    --paper-base: #f2ede2;
+    --ink-main: #26221d;
+    --ink-secondary: #4a453c;
+    --ink-muted: #787165;
+    --border-soft: rgba(95, 86, 72, 0.24);
+    --gutter: clamp(64px, 4.8vw, 96px);
+    --header-h: 126px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--paper-base); color: var(--ink-main);
+    font-family: 'LXGW WenKai TC', 'Noto Serif SC', serif;
+    overflow-x: hidden; -webkit-font-smoothing: antialiased; position: relative; transition: background-color 0.9s ease;
+}
+
+.site-title, .hero-exhibition-title .title-main, .chapter-title { text-shadow: 0 0 0.7px rgba(38, 34, 29, 0.32); }
+
+.home-breeze-layer {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; opacity: 1; transition: opacity 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.mode-gallery .home-breeze-layer { opacity: 0; }
+
+.breeze-slot { position: absolute; inset: 0; opacity: 0; transition: opacity 6s ease-in-out; }
+.breeze-slot.active { opacity: 0.72; }
+
+.breeze-clone {
+    position: absolute; top: -5%; left: -5%; width: 110%; height: 110%; object-fit: cover; display: block;
+    background-position: center center; background-repeat: no-repeat; background-size: cover;
+    filter: saturate(0.88) contrast(0.95) brightness(1.02);
+}
+
+.breeze-clone.clone-1 { animation: slowBreezePan 24s infinite alternate ease-in-out; }
+.breeze-clone.clone-2 { opacity: 0.45; mix-blend-mode: soft-light; animation: slowBreezePanReverse 28s infinite alternate ease-in-out, pulseSoftly 4.2s infinite alternate ease-in-out; }
+
+.loop-video { opacity: 0; }
+.loop-video.active { opacity: 1; }
+
+@keyframes slowBreezePan { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.05) translate(-1.2%, -0.8%); } }
+@keyframes slowBreezePanReverse { 0% { transform: scale(1.05) translate(1%, 0.6%); } 100% { transform: scale(1.01) translate(-0.8%, 0.4%); } }
+@keyframes pulseSoftly { 0% { opacity: 0.2; } 100% { opacity: 0.55; } }
+
+.breeze-thin-veil {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(242, 237, 226, 0.72) 0%, rgba(242, 237, 226, 0.42) 45%, rgba(242, 237, 226, 0.18) 100%);
+}
+.breeze-thin-veil::after {
+    content: "";
+    position: absolute;
+    inset: -6%;
+    background:
+        radial-gradient(ellipse 58% 48% at 24% 28%, rgba(255, 244, 218, 0.42), transparent 68%),
+        radial-gradient(ellipse 52% 44% at 76% 64%, rgba(255, 238, 200, 0.28), transparent 70%);
+    mix-blend-mode: soft-light;
+    animation: breezeLightDrift 18s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+@keyframes breezeLightDrift {
+    0%   { opacity: 0.35; transform: translate3d(-1.6%, -0.8%, 0) scale(1); }
+    50%  { opacity: 0.72; transform: translate3d(1.2%, 0.6%, 0) scale(1.03); }
+    100% { opacity: 0.42; transform: translate3d(2.2%, -0.4%, 0) scale(1.015); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .breeze-thin-veil::after { animation: none; }
+}
+
+.vintage-paper-grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 900; opacity: 0.38; mix-blend-mode: multiply; transition: opacity 0.8s ease;
+    background-image:
+        radial-gradient(circle at 50% 50%, transparent 60%, rgba(120, 105, 82, 0.14) 100%),
+        url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='fineGrain' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.25' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0.33 0.33 0.33 0 0  0.31 0.31 0.31 0 0  0.27 0.27 0.27 0 0  0 0 0 0.26 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23fineGrain)'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg width='500' height='500' viewBox='0 0 500 500' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='cloudPaper' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.024' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0.36 0.34 0.30 0 0  0.34 0.32 0.28 0 0  0.29 0.27 0.23 0 0  0 0 0 0.11 0'/%3E%3C/filter%3E%3Crect width='500' height='500' filter='url(%23cloudPaper)'/%3E%3C/svg%3E");
+    background-size: 100% 100%, 240px 240px, 500px 500px;
+}
+
+body.mode-gallery .vintage-paper-grain { opacity: 0.76; }
+body.dark-chapter .vintage-paper-grain { opacity: 0.36; }
+
+.page-transition-curtain {
+    position: fixed; inset: 0; background-color: var(--paper-base); z-index: 9999; pointer-events: none; opacity: 1; transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.space-wrapper {
+    position: relative; z-index: 10; display: none; opacity: 0;
+}
+.space-wrapper.active {
+    display: block; opacity: 1;
+}
+
+.mobile-art-viewer {
+    display: none;
+}
